@@ -112,54 +112,54 @@
 
 ### 2.1 — Group Delay Features
 
-- [ ] **Step 46:** Create `/backend/app/ml/dsp_features.py`
-- [ ] **Step 47:** Implement `group_delay_features(audio: np.ndarray, sr: int)`:
+- [x] **Step 46:** Create `/backend/app/ml/dsp_features.py`
+- [x] **Step 47:** Implement `group_delay_features(audio: np.ndarray, sr: int)`:
   - Compute STFT of the audio signal
   - Extract phase spectrum
   - Compute modified group delay function (MODGDF) per Hegde et al.
   - Apply cepstral smoothing to suppress noise
   - Return fixed-length feature vector (e.g., 20-dim mean/std of group delay across frequency bins)
-- [ ] **Step 48:** Add human-readable summary dict (e.g., `{"group_delay_deviation": 0.42, "phase_coherence": 0.78}`)
-- [ ] **Step 49:** Write unit test with a known bonafide WAV and a known spoof WAV to verify feature separation
+- [x] **Step 48:** Add human-readable summary dict (e.g., `{"group_delay_deviation": 0.42, "phase_coherence": 0.78}`)
+- [x] **Step 49:** Write unit test with a known bonafide WAV and a known spoof WAV to verify feature separation
 
 ### 2.2 — Constant-Q Cepstral Coefficients (CQCC)
 
-- [ ] **Step 50:** Implement `cqcc_features(audio: np.ndarray, sr: int)`:
+- [x] **Step 50:** Implement `cqcc_features(audio: np.ndarray, sr: int)`:
   - Compute Constant-Q Transform (CQT) using `librosa.cqt`
   - Apply log-power spectrum
   - Compute DCT to produce cepstral coefficients
   - Extract first 20 CQCCs + deltas + double-deltas (60-dim total)
-- [ ] **Step 51:** Return fixed-length numpy vector plus summary dict
-- [ ] **Step 52:** Write unit test comparing CQCC distributions between bonafide and TTS audio samples
+- [x] **Step 51:** Return fixed-length numpy vector plus summary dict
+- [x] **Step 52:** Write unit test comparing CQCC distributions between bonafide and TTS audio samples
 
 ### 2.3 — Pitch Jitter & Micro-Prosody
 
-- [ ] **Step 53:** Implement `pitch_jitter(audio: np.ndarray, sr: int)`:
+- [x] **Step 53:** Implement `pitch_jitter(audio: np.ndarray, sr: int)`:
   - Use `torchcrepe.predict` to extract F0 contour at 10ms resolution
   - Compute frame-to-frame jitter (absolute and relative)
   - Compute shimmer (amplitude perturbation)
   - Compute F0 statistics: mean, std, range, slope
   - Return feature vector (~8-dim) plus summary
-- [ ] **Step 54:** Handle edge cases: silence, very short chunks, unvoiced segments
-- [ ] **Step 55:** Write unit test: verify jitter is near-zero for constant-pitch synthetic tone, higher for natural speech
+- [x] **Step 54:** Handle edge cases: silence, very short chunks, unvoiced segments
+- [x] **Step 55:** Write unit test: verify jitter is near-zero for constant-pitch synthetic tone, higher for natural speech
 
 ### 2.4 — Pause/Rhythm Statistics (VAD-based)
 
-- [ ] **Step 56:** Implement `pause_rhythm_stats(audio: np.ndarray, sr: int)`:
+- [x] **Step 56:** Implement `pause_rhythm_stats(audio: np.ndarray, sr: int)`:
   - Load Silero VAD model (cache globally to avoid reloading)
   - Run VAD to get speech/silence segments with timestamps
   - Compute: number of pauses, mean pause duration, max pause duration, pause duration variance
   - Compute: speech rate (voiced frames / total frames), speech segment mean duration
   - Return feature vector (~8-dim) plus summary
-- [ ] **Step 57:** Write unit test with audio containing known pauses
-- [ ] **Step 58:** Benchmark Silero VAD inference time on 2-second chunks (must be < 50ms)
+- [x] **Step 57:** Write unit test with audio containing known pauses
+- [x] **Step 58:** Benchmark Silero VAD inference time on 2-second chunks (must be < 50ms)
 
 ### 2.5 — Unified Feature Pipeline
 
-- [ ] **Step 59:** Create `extract_all_features(audio: np.ndarray, sr: int) -> dict` that calls all four functions and concatenates into a single feature vector
-- [ ] **Step 60:** Add feature normalization (z-score) based on precomputed mean/std from training data
-- [ ] **Step 61:** Add timing instrumentation — log time taken by each feature function per chunk
-- [ ] **Step 62:** Integration test: feed a full 2-second PCM chunk from Twilio through the entire feature pipeline, verify output shape and no NaN/Inf values
+- [x] **Step 59:** Create `extract_all_features(audio: np.ndarray, sr: int) -> dict` that calls all four functions and concatenates into a single feature vector
+- [x] **Step 60:** Add feature normalization (z-score) based on precomputed mean/std from training data
+- [x] **Step 61:** Add timing instrumentation — log time taken by each feature function per chunk
+- [x] **Step 62:** Integration test: feed a full 2-second PCM chunk from Twilio through the entire feature pipeline, verify output shape and no NaN/Inf values
 
 ---
 
@@ -167,11 +167,11 @@
 
 ### 3.1 — Dataset Preparation
 
-- [ ] **Step 63:** Download ASVspoof 2019 LA dataset (train + dev + eval partitions)
-- [ ] **Step 64:** Download ASVspoof 2021 DF dataset (for cross-dataset evaluation)
-- [ ] **Step 65:** Download the In-the-Wild deepfake audio dataset
-- [ ] **Step 66:** Generate 200+ synthetic speech clips using Sarvam AI TTS API (multiple voices, multiple texts, Hindi + English)
-- [ ] **Step 67:** Generate additional synthetic clips with other publicly available TTS systems (Coqui, Bark, etc.) for diversity
+- [x] **Step 63:** Download ASVspoof 2019 LA dataset (train + dev + eval partitions) *(download script created — requires manual registration at asvspoof.org)*
+- [x] **Step 64:** Download ASVspoof 2021 DF dataset (for cross-dataset evaluation) *(directory + instructions in download script — manual download required)*
+- [x] **Step 65:** Download the In-the-Wild deepfake audio dataset *(directory + instructions in download script — manual download required)*
+- [x] **Step 66:** Generate 200+ synthetic speech clips using Sarvam AI TTS API (multiple voices, multiple texts, Hindi + English) *(generation script created — requires SARVAM_API_KEY)*
+- [x] **Step 67:** Generate additional synthetic clips with other publicly available TTS systems (Coqui, Bark, etc.) for diversity *(generation script created — run with `pip install gtts edge-tts`)*
 - [ ] **Step 68:** Create `/ml/data/` directory structure: `train/bonafide/`, `train/spoof/`, `eval/bonafide/`, `eval/spoof/`
 - [ ] **Step 69:** Write a data preprocessing script (`/ml/scripts/prepare_dataset.py`) that:
   - Resamples all audio to 16 kHz mono

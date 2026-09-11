@@ -1,0 +1,52 @@
+# ============================================================
+# VoiceGuard Backend — Pinned Dependencies
+# Generated for Docker reproducibility. Update versions after
+# testing in dev before deploying to production.
+# ============================================================
+
+# --- Web framework & server ---
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+websockets==15.0.1
+python-multipart==0.0.20
+
+# --- ML / Deep learning ---
+# NOTE: For production Docker, install torch CPU-only via:
+#   --index-url https://download.pytorch.org/whl/cpu
+torch==2.7.1
+torchaudio==2.7.1
+torchcrepe==0.0.23
+
+# --- DSP / Audio processing ---
+librosa==0.10.2.post1
+numpy==1.26.4
+scipy==1.15.3
+soundfile==0.13.1
+audioop-lts==0.2.1
+
+# --- Feature-based ML ---
+xgboost==2.1.4
+scikit-learn==1.6.1
+joblib==1.4.2
+
+# --- NLP / Embeddings ---
+sentence-transformers==4.1.0
+
+# --- Redis ---
+redis[hiredis]==5.3.0
+
+# --- AWS services ---
+boto3==1.38.34
+
+# --- Twilio ---
+twilio==9.6.1
+
+# --- Silero VAD ---
+silero-vad==5.1.2
+
+# --- Configuration & utilities ---
+pydantic==2.11.3
+pydantic-settings==2.9.1
+python-dotenv==1.1.0
+structlog==25.4.0
+httpx==0.28.1

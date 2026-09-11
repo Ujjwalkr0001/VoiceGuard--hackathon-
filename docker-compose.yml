@@ -1,0 +1,58 @@
+# ============================================================
+# VoiceGuard — Local Development Docker Compose
+# Usage: docker compose up --build
+# ============================================================
+
+services:
+  # --- FastAPI Backend ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: voiceguard-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app          # Hot-reload: mount source code
+      - backend-cache:/root/.cache  # Cache model downloads across rebuilds
+    env_file:
+      - ./backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - APP_ENV=development
+      - APP_DEBUG=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - voiceguard-net
+
+  # --- Redis (hot-path session state) ---
+  redis:
+    image: redis:7-alpine
+    container_name: voiceguard-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - voiceguard-net
+
+volumes:
+  redis-data:
+    driver: local
+  backend-cache:
+    driver: local
+
+networks:
+  voiceguard-net:
+    driver: bridge

@@ -1,0 +1,123 @@
+# ============================================================
+# VoiceGuard — .gitignore
+# Covers: Python, Node/React Native, env files, ML artifacts,
+#         datasets, Docker, IDE configs, OS files
+# ============================================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.venv/
+venv/
+env/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ---- Pytest / Coverage ----
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# ---- MyPy / Type Checking ----
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ---- Ruff ----
+.ruff_cache/
+
+# ---- Node / React Native ----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# ---- React Native build artifacts ----
+app/android/app/build/
+app/android/.gradle/
+app/ios/Pods/
+app/ios/build/
+*.apk
+*.aab
+*.ipa
+
+# ---- Environment / Secrets ----
+.env
+.env.local
+.env.production
+.env.staging
+*.pem
+secrets/
+
+# ---- ML Model Checkpoints & Artifacts ----
+*.pt
+*.pth
+*.onnx
+*.bin
+*.h5
+*.pkl
+*.joblib
+*.safetensors
+ml/models/*.pt
+ml/models/*.pth
+ml/checkpoints/
+backend/app/ml/models/*.pt
+backend/app/ml/models/*.joblib
+
+# ---- Datasets (never commit audio data) ----
+ml/data/
+datasets/
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.parquet
+*.npz
+
+# ---- Docker ----
+docker-compose.override.yml
+
+# ---- IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ---- Logs ----
+*.log
+logs/
+
+# ---- Temporary files ----
+tmp/
+temp/
+scratch/

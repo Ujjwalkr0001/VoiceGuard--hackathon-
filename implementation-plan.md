@@ -24,16 +24,16 @@
 
 ### 0.2 — Monorepo Structure
 
-- [ ] **Step 13:** Initialize git repo with `main` and `dev` branches
-- [ ] **Step 14:** Create `/backend` directory (Python FastAPI service)
-- [ ] **Step 15:** Create `/app` directory (React Native mobile app)
-- [ ] **Step 16:** Create `/ml` directory (training scripts, model artifacts, dataset tools)
-- [ ] **Step 17:** Create `/infra` directory (Dockerfiles, ECS task defs, IaC configs)
-- [ ] **Step 18:** Create `/docs` directory (architecture diagrams, API docs, demo scripts)
+- [x] **Step 13:** Initialize git repo with `main` and `dev` branches
+- [x] **Step 14:** Create `/backend` directory (Python FastAPI service)
+- [x] **Step 15:** Create `/app` directory (React Native mobile app)
+- [x] **Step 16:** Create `/ml` directory (training scripts, model artifacts, dataset tools)
+- [x] **Step 17:** Create `/infra` directory (Dockerfiles, ECS task defs, IaC configs)
+- [x] **Step 18:** Create `/docs` directory (architecture diagrams, API docs, demo scripts)
 
 ### 0.3 — Backend Project Initialization
 
-- [ ] **Step 19:** Create `/backend/pyproject.toml` with Python 3.11 and all dependencies:
+- [x] **Step 19:** Create `/backend/pyproject.toml` with Python 3.11 and all dependencies:
   - `fastapi`, `uvicorn[standard]`, `websockets`
   - `torch`, `torchaudio`, `torchcrepe`
   - `librosa`, `numpy`, `scipy`
@@ -43,8 +43,8 @@
   - `silero-vad`
   - `sentence-transformers`
   - `python-dotenv`
-- [ ] **Step 20:** Create `/backend/requirements.txt` as a pinned lockfile for Docker reproducibility
-- [ ] **Step 21:** Create `/backend/.env.example` listing all required environment variables:
+- [x] **Step 20:** Create `/backend/requirements.txt` as a pinned lockfile for Docker reproducibility
+- [x] **Step 21:** Create `/backend/.env.example` listing all required environment variables:
   ```
   TWILIO_ACCOUNT_SID=
   TWILIO_AUTH_TOKEN=
@@ -60,24 +60,24 @@
   RISK_THRESHOLD_MEDIUM=70
   RISK_THRESHOLD_HIGH=85
   ```
-- [ ] **Step 22:** Create `/backend/app/__init__.py` and `/backend/app/main.py` with a bare FastAPI app skeleton
-- [ ] **Step 23:** Create `/backend/app/config.py` — load all env vars with validation using Pydantic `BaseSettings`
+- [x] **Step 22:** Create `/backend/app/__init__.py` and `/backend/app/main.py` with a bare FastAPI app skeleton
+- [x] **Step 23:** Create `/backend/app/config.py` — load all env vars with validation using Pydantic `BaseSettings`
 
 ### 0.4 — Docker & Local Dev Environment
 
-- [ ] **Step 24:** Create `docker-compose.yml` at project root with services:
+- [x] **Step 24:** Create `docker-compose.yml` at project root with services:
   - `backend` (FastAPI, ports 8000, hot-reload mount)
   - `redis` (Redis 7, port 6379)
-- [ ] **Step 25:** Create `/backend/Dockerfile.dev` for local development with hot-reload
-- [ ] **Step 26:** Verify `docker compose up` starts both services and FastAPI responds on `http://localhost:8000/health`
-- [ ] **Step 27:** Create a `/backend/app/health.py` health check endpoint that pings Redis and returns status
+- [x] **Step 25:** Create `/backend/Dockerfile.dev` for local development with hot-reload
+- [ ] **Step 26:** Verify `docker compose up` starts both services and FastAPI responds on `http://localhost:8000/health` *(⏳ needs Docker Desktop running)*
+- [x] **Step 27:** Create a `/backend/app/health.py` health check endpoint that pings Redis and returns status
 
 ### 0.5 — Logging, Error Handling & Project Conventions
 
-- [ ] **Step 28:** Set up structured JSON logging using Python `logging` + `structlog`
-- [ ] **Step 29:** Create `/backend/app/exceptions.py` — define custom exception classes for audio processing errors, model inference errors, and external service failures
-- [ ] **Step 30:** Add global exception handlers in FastAPI for graceful error responses
-- [ ] **Step 31:** Create `.gitignore` covering Python, Node, env files, model checkpoints, datasets
+- [x] **Step 28:** Set up structured JSON logging using Python `logging` + `structlog`
+- [x] **Step 29:** Create `/backend/app/exceptions.py` — define custom exception classes for audio processing errors, model inference errors, and external service failures
+- [x] **Step 30:** Add global exception handlers in FastAPI for graceful error responses
+- [x] **Step 31:** Create `.gitignore` covering Python, Node, env files, model checkpoints, datasets
 
 ---
 
@@ -85,25 +85,25 @@
 
 ### 1.1 — TwiML & Webhook Setup
 
-- [ ] **Step 32:** Create `/backend/app/routes/twilio_webhook.py` — POST endpoint for Twilio Voice webhook
-- [ ] **Step 33:** Implement TwiML response that `<Dial>`s to the target number and includes `<Stream url="wss://your-host/media-stream" track="inbound_track" />`
+- [x] **Step 32:** Create `/backend/app/routes/twilio_webhook.py` — POST endpoint for Twilio Voice webhook
+- [x] **Step 33:** Implement TwiML response that `<Dial>`s to the target number and includes `<Stream url="wss://your-host/media-stream" track="inbound_track" />`
 - [ ] **Step 34:** Configure Twilio phone number's Voice webhook to point to the FastAPI endpoint (use ngrok for local dev)
 - [ ] **Step 35:** Test that dialing the Twilio number establishes a bridged call and logs a connection
 
 ### 1.2 — WebSocket Media Stream Endpoint
 
-- [ ] **Step 36:** Create `/backend/app/routes/media_stream.py` — FastAPI WebSocket endpoint at `/media-stream`
-- [ ] **Step 37:** Implement Twilio Media Streams protocol handler: parse `connected`, `start`, `media`, `stop` JSON events
-- [ ] **Step 38:** Extract `streamSid`, `callSid`, `track` from the `start` event and log them
-- [ ] **Step 39:** Decode base64 mu-law 8 kHz audio payload from `media` events to 16-bit PCM using `audioop.ulaw2lin`
-- [ ] **Step 40:** Implement a per-call audio buffer manager class (`AudioBufferManager`) that accumulates decoded PCM frames
+- [x] **Step 36:** Create `/backend/app/routes/media_stream.py` — FastAPI WebSocket endpoint at `/media-stream`
+- [x] **Step 37:** Implement Twilio Media Streams protocol handler: parse `connected`, `start`, `media`, `stop` JSON events
+- [x] **Step 38:** Extract `streamSid`, `callSid`, `track` from the `start` event and log them
+- [x] **Step 39:** Decode base64 mu-law 8 kHz audio payload from `media` events to 16-bit PCM using `audioop.ulaw2lin`
+- [x] **Step 40:** Implement a per-call audio buffer manager class (`AudioBufferManager`) that accumulates decoded PCM frames
 
 ### 1.3 — Windowing & Chunk Dispatch
 
-- [ ] **Step 41:** Implement rolling 2-second window with 0.5-second overlap (hop) in `AudioBufferManager`
-- [ ] **Step 42:** When a full 2-second window is ready, emit the chunk to the processing pipeline (asyncio queue)
-- [ ] **Step 43:** Add frame-timestamp tracking for each chunk to enable time-aligned risk scoring
-- [ ] **Step 44:** Write unit tests for `AudioBufferManager`: verify correct chunk size, overlap, and timestamp alignment
+- [x] **Step 41:** Implement rolling 2-second window with 0.5-second overlap (hop) in `AudioBufferManager`
+- [x] **Step 42:** When a full 2-second window is ready, emit the chunk to the processing pipeline (asyncio queue)
+- [x] **Step 43:** Add frame-timestamp tracking for each chunk to enable time-aligned risk scoring
+- [x] **Step 44:** Write unit tests for `AudioBufferManager`: verify correct chunk size, overlap, and timestamp alignment
 - [ ] **Step 45:** End-to-end test: make a real Twilio call, verify chunks are produced and logged with correct durations
 
 ---

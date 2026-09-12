@@ -138,6 +138,178 @@ def history_key(call_sid: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Per-call state storage (Step 116)
+# ---------------------------------------------------------------------------
+
+async def store_risk_state(
+    call_sid: str,
+    current_score: float,
+    peak_score: float,
+    chunk_count: int,
+) -> None:
+    """
+    Store / update the per-call risk state hash in Redis.
+
+    Key: call:{call_sid}:risk
+    Fields: current_score, peak_score, chunk_count, last_updated
+    TTL: 24 hours (reset on each update)
+    """
+    import time
+
+    r = await get_redis()
+    key = risk_key(call_sid)
+
+    await r.hset(key, mapping={
+        "current_score": str(round(current_score, 2)),
+        "peak_score": str(round(peak_score, 2)),
+        "chunk_count": str(chunk_count),
+        "last_updated": str(round(time.time(), 3)),
+    })
+    await r.expire(key, CALL_KEY_TTL)
+
+    logger.debug(
+        "redis_client.risk_state_stored",
+        extra={
+            "call_sid": call_sid,
+            "current_score": round(current_score, 2),
+            "peak_score": round(peak_score, 2),
+            "chunk_count": chunk_count,
+        },
+    )
+
+
+async def get_risk_state(call_sid: str) -> Optional[dict]:
+    """
+    Retrieve the per-call risk state hash from Redis.
+
+    Returns:
+        Dict with keys: current_score, peak_score, chunk_count, last_updated
+        Or None if the key doesn't exist.
+    """
+    r = await get_redis()
+    data = await r.hgetall(risk_key(call_sid))
+
+    if not data:
+        return None
+
+    return {
+        "current_score": float(data.get("current_score", 0)),
+        "peak_score": float(data.get("peak_score", 0)),
+        "chunk_count": int(data.get("chunk_count", 0)),
+        "last_updated": float(data.get("last_updated", 0)),
+    }
+
+
+async def append_score_history(
+    call_sid: str,
+    timestamp: float,
+    score: float,
+) -> None:
+    """
+    Append a (timestamp, score) entry to the per-call score history.
+
+    Key: call:{call_sid}:history (sorted set, scored by timestamp)
+    TTL: 24 hours
+    """
+    r = await get_redis()
+    key = history_key(call_sid)
+
+    # Sorted set: member = "timestamp:score", score = timestamp (for ordering)
+    member = f"{round(timestamp, 3)}:{round(score, 2)}"
+    await r.zadd(key, {member: timestamp})
+    await r.expire(key, CALL_KEY_TTL)
+
+
+async def get_score_history(call_sid: str) -> list:
+    """
+    Retrieve the full score history for a call.
+
+    Returns:
+        List of (timestamp, score) tuples, sorted by timestamp ascending.
+    """
+    r = await get_redis()
+    members = await r.zrangebyscore(
+        history_key(call_sid),
+        min="-inf",
+        max="+inf",
+    )
+
+    history = []
+    for member in members:
+        parts = member.split(":", 1)
+        if len(parts) == 2:
+            history.append({
+                "timestamp": float(parts[0]),
+                "score": float(parts[1]),
+            })
+
+    return history
+
+
+async def cleanup_call_state(call_sid: str) -> None:
+    """
+    Delete all Redis keys for a completed call.
+
+    Called when a call ends to free memory immediately
+    (rather than waiting for the 24h TTL).
+    """
+    r = await get_redis()
+    await r.delete(risk_key(call_sid), history_key(call_sid))
+    logger.info(
+        "redis_client.call_state_cleaned",
+        extra={"call_sid": call_sid},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Convenience readers (Steps 117-118)
+# ---------------------------------------------------------------------------
+
+async def get_current_risk(call_sid: str) -> float:
+    """
+    Read the current risk score for an active call from Redis.
+
+    Args:
+        call_sid: Twilio call SID.
+
+    Returns:
+        Current smoothed risk score (0-100), or 0.0 if no state exists.
+    """
+    state = await get_risk_state(call_sid)
+    if state is None:
+        return 0.0
+    return state["current_score"]
+
+
+async def check_threshold_crossed(call_sid: str) -> Optional[str]:
+    """
+    Check whether the current risk score exceeds a threshold.
+
+    Reads the current score from Redis and compares it against the
+    configured medium and high thresholds.
+
+    Args:
+        call_sid: Twilio call SID.
+
+    Returns:
+        "high"   — if current_score >= high threshold (default 85)
+        "medium" — if current_score >= medium threshold (default 70)
+        None     — if below both thresholds or no state exists
+    """
+    state = await get_risk_state(call_sid)
+    if state is None:
+        return None
+
+    score = state["current_score"]
+
+    if score >= settings.risk_threshold_high:
+        return "high"
+    elif score >= settings.risk_threshold_medium:
+        return "medium"
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Internals
 # ---------------------------------------------------------------------------
 

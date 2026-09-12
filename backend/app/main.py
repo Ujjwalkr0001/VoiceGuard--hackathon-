@@ -38,15 +38,39 @@ async def lifespan(app: FastAPI):
         time=datetime.now(timezone.utc).isoformat(),
     )
 
-    # TODO (Phase 2+): Load ML models into memory here
-    # TODO (Phase 6):  Initialize Redis connection pool
-    # TODO (Phase 8):  Initialize DynamoDB client
+    # --- Step 149: Load ML models once at startup ---
+    from app.pipeline.model_manager import model_manager
+
+    model_results = await model_manager.load_all()
+    logger.info("voiceguard.models_loaded", models=model_results)
+
+    # --- Step 150: Warm-up inference ---
+    warmup_results = await model_manager.warm_up()
+    logger.info("voiceguard.models_warmed", warmup=warmup_results)
+
+    # --- Initialize Redis connection pool ---
+    from app.services.redis_client import get_redis, close_redis
+
+    try:
+        await get_redis()
+        logger.info("voiceguard.redis_connected")
+    except Exception as e:
+        logger.warning("voiceguard.redis_unavailable", error=str(e))
 
     yield  # ---- app is running ----
 
     # Cleanup
     logger.info("voiceguard.shutdown")
-    # TODO: Close Redis pool, flush pending DynamoDB writes
+
+    # Close Redis pool
+    try:
+        await close_redis()
+    except Exception:
+        pass
+
+    # Unload models
+    model_manager.unload_all()
+
 
 
 # ---------------------------------------------------------------------------
@@ -97,11 +121,12 @@ async def root():
 from app.health import router as health_router  # noqa: E402
 from app.routes.twilio_webhook import router as twilio_webhook_router  # noqa: E402
 from app.routes.media_stream import router as media_stream_router  # noqa: E402
+from app.routes.api import router as api_router  # noqa: E402
 
 app.include_router(health_router)
 app.include_router(twilio_webhook_router)
 app.include_router(media_stream_router)
-# TODO (Phase 10): app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router)
 
 # ---------------------------------------------------------------------------
 # Global exception handlers

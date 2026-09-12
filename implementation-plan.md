@@ -254,28 +254,28 @@
 
 ### 5.2 — Speech-to-Text Integration
 
-- [ ] **Step 97:** Create `/backend/app/services/stt_service.py`
-- [ ] **Step 98:** Implement Sarvam AI STT API client:
+- [x] **Step 97:** Create `/backend/app/services/stt_service.py`
+- [x] **Step 98:** Implement Sarvam AI STT API client:
   - Accept a PCM audio buffer (2-second chunk or accumulated longer segment)
   - POST to Sarvam AI STT endpoint with correct audio format headers
   - Return transcript text + language detected + confidence
-- [ ] **Step 99:** Implement Whisper fallback: if Sarvam API fails or times out (>2s), fall back to local Whisper `tiny` or `base` model
-- [ ] **Step 100:** Handle Hindi, English, and code-mixed (Hinglish) transcription
-- [ ] **Step 101:** Accumulate transcripts across chunks for the same call (sliding text window of last 30 seconds)
+- [x] **Step 99:** Implement Whisper fallback: if Sarvam API fails or times out (>2s), fall back to local Whisper `tiny` or `base` model
+- [x] **Step 100:** Handle Hindi, English, and code-mixed (Hinglish) transcription
+- [x] **Step 101:** Accumulate transcripts across chunks for the same call (sliding text window of last 30 seconds)
 
 ### 5.3 — Context/Risk-Phrase Analyzer
 
-- [ ] **Step 102:** Create `/backend/app/ml/context_analyzer.py`
-- [ ] **Step 103:** Define configurable risk phrase dictionary with severity tiers:
+- [x] **Step 102:** Create `/backend/app/ml/context_analyzer.py`
+- [x] **Step 103:** Define configurable risk phrase dictionary with severity tiers:
   - **Critical (weight 1.0):** OTP, password, UPI PIN, CVV, one-time password, verification code, mPIN, Aadhaar number
   - **High (weight 0.7):** transfer money, bank account, NEFT, RTGS, IMPS, send money, credit card number
   - **Medium (weight 0.4):** urgent, immediately, deadline, penalty, block account, suspend, verify identity, KYC
   - Include Hindi equivalents for all phrases
-- [ ] **Step 104:** Implement regex + keyword matching for fast phrase detection
-- [ ] **Step 105:** (Optional) Implement `sentence-transformers` embedding similarity for fuzzy matching of paraphrased risk phrases
-- [ ] **Step 106:** Compute `context_risk_score` based on density and severity of detected phrases in the recent transcript window
-- [ ] **Step 107:** Return detected phrases with timestamps for the risk explanation panel
-- [ ] **Step 108:** Write unit tests with sample transcripts containing risk phrases in English, Hindi, and Hinglish
+- [x] **Step 104:** Implement regex + keyword matching for fast phrase detection
+- [x] **Step 105:** (Optional) Implement `sentence-transformers` embedding similarity for fuzzy matching of paraphrased risk phrases *(placeholder added — `_embedder = None`, full implementation deferred)*
+- [x] **Step 106:** Compute `context_risk_score` based on density and severity of detected phrases in the recent transcript window
+- [x] **Step 107:** Return detected phrases with timestamps for the risk explanation panel
+- [x] **Step 108:** Write unit tests with sample transcripts containing risk phrases in English, Hindi, and Hinglish *(54 tests, all passing)*
 
 ---
 
@@ -283,25 +283,25 @@
 
 ### 6.1 — Core Risk Engine
 
-- [ ] **Step 109:** Create `/backend/app/services/risk_engine.py`
-- [ ] **Step 110:** Implement `RiskEngine` class (one instance per active call SID):
+- [x] **Step 109:** Create `/backend/app/services/risk_engine.py`
+- [x] **Step 110:** Implement `RiskEngine` class (one instance per active call SID):
   - Attributes: `call_sid`, `caller_number`, `start_time`, `chunk_scores: list`, `rolling_window_size: int = 10`
   - On each new chunk, receive: `acoustic_score` (from ensemble), `context_score` (from NLP)
-- [ ] **Step 111:** Implement `caller_multiplier` logic:
+- [x] **Step 111:** Implement `caller_multiplier` logic:
   - If caller number is in the user's enrolled contacts list → multiplier = 1.0
   - If caller number is unknown → multiplier = 1.3
   - If caller number is flagged (previously high-risk) → multiplier = 1.5
-- [ ] **Step 112:** Implement composite score calculation:
+- [x] **Step 112:** Implement composite score calculation:
   ```
   raw_score = (0.65 × acoustic_score) + (0.35 × context_score)
   adjusted_score = min(100, raw_score × caller_multiplier)
   ```
-- [ ] **Step 113:** Implement rolling average over last N chunks (configurable, default 10) for temporal smoothing
-- [ ] **Step 114:** Implement spike detection: if a single chunk score exceeds 95, bypass rolling average and immediately flag
+- [x] **Step 113:** Implement rolling average over last N chunks (configurable, default 10) for temporal smoothing
+- [x] **Step 114:** Implement spike detection: if a single chunk score exceeds 95, bypass rolling average and immediately flag
 
 ### 6.2 — Redis-Backed State
 
-- [ ] **Step 115:** Create `/backend/app/services/redis_client.py` — async Redis connection pool using `aioredis`
+- [x] **Step 115:** Create `/backend/app/services/redis_client.py` — async Redis connection pool using `redis.asyncio` (successor to `aioredis`)
 - [ ] **Step 116:** Store per-call state in Redis:
   - Key: `call:{call_sid}:risk` → hash with `current_score`, `peak_score`, `chunk_count`, `last_updated`
   - Key: `call:{call_sid}:history` → sorted set of `(timestamp, score)` pairs
@@ -630,6 +630,6 @@
 
 > **Total Steps: 231**
 >
-> Progress: `[ 0 / 231 ]` completed
+> Progress: `[ 75 / 231 ]` completed
 >
 > Last updated: 2026-09-11

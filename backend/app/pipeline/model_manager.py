@@ -92,16 +92,23 @@ class ModelManager:
         return results
 
     async def _load_model_a(self, checkpoint_path: Optional[str] = None) -> dict:
-        """Load AASIST model."""
+        """Load AASIST model, falling back to DSP heuristic scorer if checkpoint is absent."""
         path = checkpoint_path or _DEFAULT_AASIST_CHECKPOINT
         result = {"model": "aasist", "status": "not_found", "path": path}
 
         if not Path(path).exists():
             logger.warning(
                 "model_manager.aasist_not_found",
-                extra={"path": path, "detail": "AASIST checkpoint not found - Model A will return neutral scores"},
+                extra={
+                    "path": path,
+                    "detail": (
+                        "AASIST checkpoint not found — "
+                        "loading DSP heuristic scorer as Model A fallback"
+                    ),
+                },
             )
-            return result
+            # ---- Fallback: load DSP heuristic acoustic scorer ----
+            return await self._load_dsp_fallback()
 
         def _load():
             t0 = time.perf_counter()
@@ -143,6 +150,8 @@ class ModelManager:
                 "model_manager.aasist_skipped",
                 extra={"path": path, "reason": str(e)},
             )
+            # Still load DSP fallback so model_a is not None
+            return await self._load_dsp_fallback()
         except Exception as e:
             result["status"] = "error"
             result["error"] = str(e)
@@ -150,7 +159,40 @@ class ModelManager:
                 "model_manager.aasist_load_failed",
                 extra={"path": path, "error": str(e)},
             )
+            # Still load DSP fallback so model_a is not None
+            return await self._load_dsp_fallback()
 
+        return result
+
+    async def _load_dsp_fallback(self) -> dict:
+        """
+        Instantiate the DSP heuristic acoustic scorer as Model A.
+
+        This runs without any checkpoint file — works purely from the
+        DSP feature vector that the pipeline already computes.
+        """
+        t0 = time.perf_counter()
+        result = {"model": "dsp_heuristic", "status": "loading"}
+        try:
+            from app.ml.dsp_acoustic_scorer import DSPAcousticScorer
+
+            scorer = DSPAcousticScorer(sample_rate=8000)
+            load_ms = (time.perf_counter() - t0) * 1000
+            self.model_a = scorer
+            self._load_times["model_a"] = round(load_ms, 1)
+            result["status"] = "loaded"
+            result["load_ms"] = round(load_ms, 1)
+            logger.info(
+                "model_manager.dsp_fallback_loaded",
+                extra={"load_ms": round(load_ms, 1)},
+            )
+        except Exception as e:
+            result["status"] = "error"
+            result["error"] = str(e)
+            logger.error(
+                "model_manager.dsp_fallback_failed",
+                extra={"error": str(e)},
+            )
         return result
 
     async def _load_model_b(self, model_path: Optional[str] = None) -> dict:
@@ -318,9 +360,18 @@ class ModelManager:
     @property
     def status(self) -> dict:
         """Return current model loading status."""
+        if self.model_a is None:
+            model_a_status = "not_loaded"
+        else:
+            # Distinguish between AASIST and DSP fallback
+            model_a_status = (
+                "loaded (dsp_heuristic)"
+                if type(self.model_a).__name__ == "DSPAcousticScorer"
+                else "loaded (aasist)"
+            )
         return {
             "loaded": self._loaded,
-            "model_a": "loaded" if self.model_a is not None else "not_loaded",
+            "model_a": model_a_status,
             "model_b": "loaded" if self.model_b is not None else "not_loaded",
             "load_times_ms": self._load_times,
         }

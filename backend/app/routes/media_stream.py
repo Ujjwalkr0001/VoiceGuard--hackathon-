@@ -8,8 +8,9 @@ Implements the Twilio Media Streams protocol:
   - 'media': Base64-encoded mu-law audio payload
   - 'stop': Stream ended (call hung up)
 
-Decodes mu-law 8kHz audio to 16-bit PCM and feeds it into the
-AudioBufferManager for chunking.
+Decodes mu-law 8kHz audio to 16-bit PCM, feeds it into the
+AudioBufferManager for chunking, and runs the full
+CallPipelineCoordinator (DSP → model inference → risk engine → alerts).
 """
 
 import asyncio
@@ -143,6 +144,26 @@ class AudioBufferManager:
 # Active call sessions
 # ---------------------------------------------------------------------------
 _active_sessions: dict[str, AudioBufferManager] = {}
+_active_coordinators: dict[str, object] = {}  # call_sid → CallPipelineCoordinator
+
+
+async def _stop_coordinator(call_sid: str) -> None:
+    """
+    Gracefully stop and remove the coordinator for a call.
+
+    All errors are swallowed so that a coordinator failure never
+    prevents WebSocket cleanup.
+    """
+    coordinator = _active_coordinators.pop(call_sid, None)
+    if coordinator is not None:
+        try:
+            await coordinator.stop()
+        except Exception as exc:
+            logger.warning(
+                "media_stream.coordinator_stop_error",
+                call_sid=call_sid,
+                error=str(exc),
+            )
 
 
 @router.websocket("/media-stream")
@@ -189,13 +210,14 @@ async def media_stream(websocket: WebSocket):
                 call_sid = start_data.get("callSid", "unknown")
                 track = start_data.get("track", "unknown")
                 custom_params = start_data.get("customParameters", {})
+                caller_number = custom_params.get("caller_number", "unknown")
 
                 logger.info(
                     "media_stream.start",
                     stream_sid=stream_sid,
                     call_sid=call_sid,
                     track=track,
-                    caller_number=custom_params.get("caller_number", ""),
+                    caller_number=caller_number,
                     called_number=custom_params.get("called_number", ""),
                     media_format=start_data.get("mediaFormat", {}),
                 )
@@ -208,6 +230,51 @@ async def media_stream(websocket: WebSocket):
                     overlap_sec=settings.audio_chunk_overlap_sec,
                 )
                 _active_sessions[call_sid] = buffer_manager
+
+                # ---- Wire up the pipeline coordinator ----
+                try:
+                    from app.pipeline.coordinator import CallPipelineCoordinator
+                    from app.pipeline.model_manager import model_manager
+
+                    coordinator = CallPipelineCoordinator(
+                        call_sid=call_sid,
+                        caller_number=caller_number,
+                        # Use caller_number as user_id fallback in dev;
+                        # production would look this up from a user session.
+                        user_id=caller_number,
+                        buffer_manager=buffer_manager,
+                    )
+
+                    # Inject shared ML models (loaded once at app startup)
+                    coordinator.set_models(
+                        model_a=model_manager.model_a,
+                        model_b=(
+                            model_manager.model_b_predict
+                            if model_manager.model_b is not None
+                            else None
+                        ),
+                    )
+
+                    # Start the async processing loop
+                    await coordinator.start()
+                    _active_coordinators[call_sid] = coordinator
+
+                    logger.info(
+                        "media_stream.coordinator_started",
+                        call_sid=call_sid,
+                        model_a=model_manager.status["model_a"],
+                        model_b=model_manager.status["model_b"],
+                    )
+
+                except Exception as exc:
+                    # Coordinator failure must not crash the WebSocket —
+                    # audio still flows even if analysis is temporarily unavailable.
+                    logger.error(
+                        "media_stream.coordinator_start_error",
+                        call_sid=call_sid,
+                        error=str(exc),
+                        error_type=type(exc).__name__,
+                    )
 
             # ----- MEDIA -----
             elif event_type == "media":
@@ -225,7 +292,7 @@ async def media_stream(websocket: WebSocket):
                 mulaw_bytes = base64.b64decode(payload_b64)
                 pcm_bytes = audioop.ulaw2lin(mulaw_bytes, 2)  # 2 = 16-bit width
 
-                # Feed into buffer manager
+                # Feed into buffer manager (coordinator loop consumes the queue)
                 buffer_manager.add_audio(pcm_bytes, timestamp_ms)
 
             # ----- STOP -----
@@ -237,9 +304,10 @@ async def media_stream(websocket: WebSocket):
                     stats=buffer_manager.stats if buffer_manager else None,
                 )
 
-                # Clean up session
-                if call_sid and call_sid in _active_sessions:
-                    del _active_sessions[call_sid]
+                # Gracefully stop the coordinator first, then clean up buffer
+                if call_sid:
+                    await _stop_coordinator(call_sid)
+                    _active_sessions.pop(call_sid, None)
 
     except WebSocketDisconnect:
         logger.info(
@@ -257,6 +325,7 @@ async def media_stream(websocket: WebSocket):
             error_type=type(e).__name__,
         )
     finally:
-        # Always clean up
-        if call_sid and call_sid in _active_sessions:
-            del _active_sessions[call_sid]
+        # Always ensure coordinator and session are cleaned up
+        if call_sid:
+            await _stop_coordinator(call_sid)
+            _active_sessions.pop(call_sid, None)

@@ -103,11 +103,46 @@ app.add_middleware(
 
 
 # ---------------------------------------------------------------------------
-# Health check — detailed (with Redis ping) in health.py
+# Static files and Web Frontend
 # ---------------------------------------------------------------------------
-@app.get("/", tags=["system"])
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+@app.get("/", tags=["frontend"], include_in_schema=False)
 async def root():
-    """Root endpoint — service info."""
+    """Serves the interactive frontend web app or fallback service info."""
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {
+        "service": "VoiceGuard API",
+        "version": __version__,
+        "docs": "/docs",
+    }
+
+
+@app.get("/demo", tags=["frontend"], include_in_schema=False)
+async def demo():
+    """Serves the interactive demo page."""
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {
+        "service": "VoiceGuard API",
+        "version": __version__,
+        "docs": "/docs",
+    }
+
+
+@app.get("/api/info", tags=["system"])
+async def api_info():
+    """Root API info endpoint."""
     return {
         "service": "VoiceGuard API",
         "version": __version__,
@@ -122,11 +157,13 @@ from app.health import router as health_router  # noqa: E402
 from app.routes.twilio_webhook import router as twilio_webhook_router  # noqa: E402
 from app.routes.media_stream import router as media_stream_router  # noqa: E402
 from app.routes.api import router as api_router  # noqa: E402
+from app.routes.upload_analysis import router as upload_analysis_router  # noqa: E402
 
 app.include_router(health_router)
 app.include_router(twilio_webhook_router)
 app.include_router(media_stream_router)
 app.include_router(api_router)
+app.include_router(upload_analysis_router)
 
 # ---------------------------------------------------------------------------
 # Global exception handlers
@@ -134,3 +171,4 @@ app.include_router(api_router)
 from app.error_handlers import register_exception_handlers  # noqa: E402
 
 register_exception_handlers(app)
+

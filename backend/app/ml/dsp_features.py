@@ -486,6 +486,140 @@ def pitch_jitter(
     return feature_vector, summary
 
 
+def fast_pitch_jitter(
+    audio: np.ndarray,
+    sr: int,
+    hop_ms: float = 15.0,
+    win_ms: float = 35.0,
+    fmin: float = 50.0,
+    fmax: float = 550.0,
+) -> tuple[np.ndarray, dict]:
+    """
+    Fast autocorrelation-based pitch (F0) jitter, shimmer, and micro-prosody extraction.
+    Computes exact same 8-dim feature representation as pitch_jitter() in <5ms on CPU.
+
+    Features (8-dim):
+        0. F0 mean (Hz)
+        1. F0 std (Hz)
+        2. F0 range (max - min, Hz)
+        3. F0 slope (linear regression slope over time)
+        4. Jitter absolute (mean |F0[i] - F0[i-1]|, Hz)
+        5. Jitter relative (jitter_abs / F0_mean, dimensionless)
+        6. Shimmer (mean |A[i] - A[i-1]| / mean(A), dimensionless)
+        7. Voiced fraction (proportion of voiced frames)
+    """
+    n_features = 8
+    min_length = int(sr * 0.05)
+    if len(audio) < min_length:
+        return np.zeros(n_features, dtype=np.float32), {
+            "f0_mean_hz": 0.0,
+            "jitter_relative": 0.0,
+            "shimmer": 0.0,
+            "voiced_fraction": 0.0,
+            "status": "audio_too_short",
+        }
+
+    win_len = int(sr * win_ms / 1000.0)
+    hop_len = int(sr * hop_ms / 1000.0)
+    min_lag = max(1, int(sr / fmax))
+    max_lag = min(int(sr / fmin), win_len - 1)
+
+    pitches = []
+    amplitudes = []
+
+    for start in range(0, len(audio) - win_len + 1, hop_len):
+        frame = audio[start : start + win_len]
+        rms = float(np.sqrt(np.mean(frame ** 2)))
+        amplitudes.append(rms)
+
+        if rms < 1e-4:
+            pitches.append(0.0)
+            continue
+
+        frame_d = frame - np.mean(frame)
+        r = np.correlate(frame_d, frame_d, mode="full")
+        r = r[len(frame_d) - 1 :]
+
+        if r[0] < 1e-8 or min_lag >= len(r):
+            pitches.append(0.0)
+            continue
+
+        search_end = min(max_lag, len(r))
+        if search_end <= min_lag:
+            pitches.append(0.0)
+            continue
+
+        peak_offset = int(np.argmax(r[min_lag:search_end]))
+        peak_idx = min_lag + peak_offset
+        norm_val = float(r[peak_idx] / (r[0] + 1e-10))
+
+        if norm_val > 0.30 and peak_idx > 0:
+            pitches.append(float(sr / peak_idx))
+        else:
+            pitches.append(0.0)
+
+    pitches = np.array(pitches, dtype=np.float32)
+    amplitudes = np.array(amplitudes, dtype=np.float32)
+    voiced_mask = pitches > 0
+    voiced_fraction = float(np.mean(voiced_mask)) if len(pitches) > 0 else 0.0
+
+    if voiced_fraction < 0.05 or np.sum(voiced_mask) < 3:
+        features = np.zeros(n_features, dtype=np.float32)
+        features[7] = voiced_fraction
+        return features, {
+            "f0_mean_hz": 0.0,
+            "jitter_relative": 0.0,
+            "shimmer": 0.0,
+            "voiced_fraction": round(voiced_fraction, 4),
+            "status": "mostly_unvoiced",
+        }
+
+    f0_voiced = pitches[voiced_mask]
+    f0_mean = float(np.mean(f0_voiced))
+    f0_std = float(np.std(f0_voiced))
+    f0_range = float(np.max(f0_voiced) - np.min(f0_voiced))
+
+    voiced_indices = np.where(voiced_mask)[0].astype(np.float64)
+    if len(voiced_indices) >= 2:
+        coeffs = np.polyfit(voiced_indices, f0_voiced, 1)
+        f0_slope = float(coeffs[0])
+    else:
+        f0_slope = 0.0
+
+    f0_diffs = np.abs(np.diff(f0_voiced))
+    jitter_abs = float(np.mean(f0_diffs)) if len(f0_diffs) > 0 else 0.0
+    jitter_rel = float(jitter_abs / (f0_mean + 1e-10))
+
+    amp_voiced = amplitudes[voiced_mask]
+    if len(amp_voiced) >= 2:
+        amp_diffs = np.abs(np.diff(amp_voiced))
+        shimmer = float(np.mean(amp_diffs) / (np.mean(amp_voiced) + 1e-10))
+    else:
+        shimmer = 0.0
+
+    feature_vector = np.array([
+        f0_mean,
+        f0_std,
+        f0_range,
+        f0_slope,
+        jitter_abs,
+        jitter_rel,
+        shimmer,
+        voiced_fraction,
+    ], dtype=np.float32)
+
+    summary = {
+        "f0_mean_hz": round(f0_mean, 2),
+        "f0_std_hz": round(f0_std, 2),
+        "jitter_relative": round(jitter_rel, 6),
+        "shimmer": round(shimmer, 6),
+        "voiced_fraction": round(voiced_fraction, 4),
+    }
+
+    return feature_vector, summary
+
+
+
 # ---------------------------------------------------------------------------
 # 4. Pause/Rhythm Statistics (Step 56)
 # ---------------------------------------------------------------------------
@@ -768,6 +902,7 @@ def get_feature_normalizer() -> FeatureNormalizer:
 def extract_all_features(
     audio: np.ndarray,
     sr: int,
+    fast_mode: bool = True,
 ) -> dict:
     """
     Run the full DSP feature extraction pipeline on an audio chunk.
@@ -779,6 +914,8 @@ def extract_all_features(
     Args:
         audio: 1-D float32 array, normalized to [-1, 1].
         sr: Sample rate in Hz.
+        fast_mode: When True (default), uses fast autocorrelation pitch tracking (<5ms)
+                   instead of CREPE on CPU (~4000ms).
 
     Returns:
         dict with keys:
@@ -820,7 +957,10 @@ def extract_all_features(
     # --- 3. Pitch Jitter (8-dim) ---
     t0 = time.perf_counter()
     try:
-        pj_features, pj_summary = pitch_jitter(audio, sr)
+        if fast_mode:
+            pj_features, pj_summary = fast_pitch_jitter(audio, sr)
+        else:
+            pj_features, pj_summary = pitch_jitter(audio, sr)
         summaries["pitch_jitter"] = pj_summary
     except Exception as e:
         logger.error("extract_all.pitch_jitter_failed", error=str(e))

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoiceGuard — AI Voice Clone & Live Call Risk Analysis</title>
+  <meta name="description" content="Real-time AI voice clone detection, deepfake acoustic analysis, and social engineering scam call defense system.">
+  
+  <!-- Modern Typography: Inter + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="glow-bg-top"></div>
+  <div class="glow-bg-bottom"></div>
+
+  <!-- Header & Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-group">
+        <div class="shield-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">VoiceGuard</span>
+          <span class="brand-badge">NEURAL DEFENSE</span>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <span class="status-dot"></span>
+        <span class="status-label">ML INFERENCE ENGINE ACTIVE</span>
+        <span class="latency-badge" id="modelLatencyBadge">DSP Sub-50ms</span>
+      </div>
+
+      <div class="header-actions">
+        <a href="/docs" target="_blank" class="nav-link">API Docs</a>
+        <a href="#samplesSection" class="btn btn-outline btn-sm">1-Click Demos</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- Hero / Title Section -->
+    <section class="hero-section">
+      <div class="hero-badge">
+        <span class="pulse-ring"></span>
+        <span>AI-POWERED VOICE SPOOFING & VISHING ANALYSIS</span>
+      </div>
+      <h1 class="hero-title">Live Call Risk & Deepfake Voice Detector</h1>
+      <p class="hero-subtitle">
+        Upload any call audio or choose a pre-loaded sample. As audio plays live, VoiceGuard inspects acoustic phase jitter, 
+        detects synthetic clones, flags credential theft in real-time, and generates actionable forensic verdicts.
+      </p>
+    </section>
+
+    <!-- 1-Click Interactive Demos Section -->
+    <section class="demo-samples-section" id="samplesSection">
+      <div class="section-label-row">
+        <span class="section-label">⚡ 1-CLICK INSTANT DEMO SCENARIOS</span>
+        <span class="section-subtext">Click any scenario to load audio, waveform & synchronized analysis instantly</span>
+      </div>
+      
+      <div class="sample-cards-grid">
+        <!-- Sample 1: Bank OTP Scam -->
+        <div class="sample-card critical" data-sample-id="scam_bank_otp" id="sampleOtpBtn">
+          <div class="sample-badge danger-badge">🚨 CRITICAL SCAM</div>
+          <div class="sample-content">
+            <h3 class="sample-title">Bank Security Impersonation</h3>
+            <p class="sample-desc">AI impersonator warning of ₹48,500 fraud and coercing user for instant 6-digit OTP & ATM PIN.</p>
+            <div class="sample-tags">
+              <span class="tag">Synthetic Voice</span>
+              <span class="tag">OTP Harvesting</span>
+              <span class="tag">Urgency Coercion</span>
+            </div>
+          </div>
+          <button class="sample-play-btn" type="button" aria-label="Load Bank Security Scam Demo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <span>Analyze Demo</span>
+          </button>
+        </div>
+
+        <!-- Sample 2: AI Relative Emergency -->
+        <div class="sample-card critical" data-sample-id="ai_relative_emergency" id="sampleEmergencyBtn">
+          <div class="sample-badge danger-badge">🚨 AI VOICE CLONE</div>
+          <div class="sample-content">
+            <h3 class="sample-title">Relative Arrest Distress Call</h3>
+            <p class="sample-desc">Cloned voice claiming to be arrested after a car crash, begging for ₹30,000 bail via PhonePe/GPay.</p>
+            <div class="sample-tags">
+              <span class="tag">Cloned Voice</span>
+              <span class="tag">Bail Money Demand</span>
+              <span class="tag">PhonePe / UPI</span>
+            </div>
+          </div>
+          <button class="sample-play-btn" type="button" aria-label="Load AI Relative Emergency Demo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <span>Analyze Demo</span>
+          </button>
+        </div>
+
+        <!-- Sample 3: Safe Call -->
+        <div class="sample-card safe" data-sample-id="safe_call" id="sampleSafeBtn">
+          <div class="sample-badge safe-badge">✅ SAFE CALL</div>
+          <div class="sample-content">
+            <h3 class="sample-title">Standard Weekend Lunch Plans</h3>
+            <p class="sample-desc">Natural human conversation arranging Saturday lunch at a cafe with friends. Normal cadence.</p>
+            <div class="sample-tags">
+              <span class="tag">Natural Prosody</span>
+              <span class="tag">Zero Coercion</span>
+              <span class="tag">Genuine Voice</span>
+            </div>
+          </div>
+          <button class="sample-play-btn" type="button" aria-label="Load Safe Call Demo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <span>Analyze Demo</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upload Audio Zone -->
+    <section class="upload-section">
+      <div class="upload-card" id="dropZone">
+        <input type="file" id="audioFileInput" accept="audio/*,.wav,.mp3,.ogg,.flac,.m4a" class="file-input-hidden">
+        
+        <div class="upload-icon-wrapper">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        
+        <div class="upload-text-group">
+          <h3>Upload Any Voice Recording for Analysis</h3>
+          <p>Drag & drop your audio file here or <span class="browse-link">browse files</span></p>
+          <span class="upload-formats-hint">Supports WAV, MP3, FLAC, OGG, M4A &bull; Multi-channel auto-mixed to mono &bull; Fast Sub-Second DSP Analysis</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading Spinner & State -->
+    <div class="analysis-loading-card" id="analysisLoading" style="display: none;">
+      <div class="radar-spinner">
+        <div class="radar-circle circle-1"></div>
+        <div class="radar-circle circle-2"></div>
+        <div class="radar-circle circle-3"></div>
+        <div class="radar-beam"></div>
+      </div>
+      <div class="loading-status-group">
+        <h4 id="loadingStepTitle">Initializing VoiceGuard Neural Pipeline...</h4>
+        <p id="loadingStepDesc">Extracting phase delay, computing pitch jitter, and screening social engineering phrases.</p>
+      </div>
+    </div>
+
+    <!-- Live Analysis Dashboard (Shown upon loading analysis) -->
+    <div class="analysis-dashboard" id="analysisDashboard" style="display: none;">
+
+      <!-- Active Threat Live Alert Banner -->
+      <div class="threat-alert-banner safe-state" id="threatAlertBanner">
+        <div class="alert-icon-box" id="alertIconBox">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="alert-content">
+          <span class="alert-tag" id="alertBannerTag">PLAYHEAD STATE: SAFE</span>
+          <span class="alert-text" id="alertBannerText">Audio playing in safe zone. No active social engineering threats detected at this timestamp.</span>
+        </div>
+        <div class="alert-timestamp" id="alertTimestamp">00:00</div>
+      </div>
+
+      <!-- Player & Interactive Waveform Card -->
+      <div class="player-card">
+        <div class="player-header">
+          <div class="file-info-col">
+            <span class="file-label">ACTIVE AUDIO TRACK</span>
+            <h2 class="active-filename" id="activeFileName">recording.wav</h2>
+          </div>
+          <div class="meta-pills-row">
+            <span class="meta-pill" id="audioDurationPill">00:00</span>
+            <span class="meta-pill" id="sampleRatePill">16.0 kHz</span>
+            <span class="meta-pill highlight" id="dangerousSegCountPill">0 Threats Flagged</span>
+          </div>
+        </div>
+
+        <!-- Waveform Canvas & Danger Overlay Container -->
+        <div class="waveform-container" id="waveformContainer">
+          <canvas id="waveformCanvas" width="1000" height="140"></canvas>
+          <div class="danger-overlays-layer" id="dangerOverlaysLayer"></div>
+          <div class="playhead-cursor" id="playheadCursor">
+            <div class="playhead-head"></div>
+          </div>
+          <div class="waveform-hover-tooltip" id="waveformTooltip">00:00</div>
+        </div>
+
+        <!-- Controls Bar -->
+        <div class="player-controls">
+          <div class="controls-left">
+            <button class="ctrl-btn main-play-btn" id="playPauseBtn" aria-label="Play or Pause Audio">
+              <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              <svg id="pauseIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+              </svg>
+            </button>
+            <button class="ctrl-btn sec-btn" id="restartBtn" title="Restart Audio" aria-label="Restart Audio">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+              </svg>
+            </button>
+            <div class="time-display">
+              <span id="currentTimeDisplay">00:00</span>
+              <span class="time-sep">/</span>
+              <span id="totalTimeDisplay">00:00</span>
+            </div>
+          </div>
+
+          <div class="controls-right">
+            <!-- Playback Rate Selector -->
+            <div class="speed-selector">
+              <button class="speed-btn active" data-speed="1">1.0x</button>
+              <button class="speed-btn" data-speed="1.25">1.25x</button>
+              <button class="speed-btn" data-speed="1.5">1.5x</button>
+            </div>
+            
+            <!-- Mute / Volume -->
+            <button class="ctrl-btn sec-btn" id="muteBtn" title="Mute / Unmute" aria-label="Mute or Unmute">
+              <svg id="volHighIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+              <svg id="volMuteIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <line x1="23" y1="9" x2="17" y2="15"/>
+                <line x1="17" y1="9" x2="23" y2="15"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hidden Audio Element -->
+        <audio id="audioPlayer" preload="auto"></audio>
+      </div>
+
+      <!-- Live Playback HUD: Real-time Multi-Gauges -->
+      <div class="hud-grid">
+        <!-- Gauge 1: Composite Live Risk -->
+        <div class="hud-card" id="riskMeterCard">
+          <div class="hud-card-header">
+            <span class="hud-title">REAL-TIME COMPOSITE RISK</span>
+            <span class="live-pill">SYNCED</span>
+          </div>
+          <div class="gauge-wrapper">
+            <div class="radial-gauge-container">
+              <svg class="radial-gauge" viewBox="0 0 160 160">
+                <circle class="gauge-bg" cx="80" cy="80" r="68"/>
+                <circle class="gauge-progress" id="liveRiskGaugeCircle" cx="80" cy="80" r="68"/>
+              </svg>
+              <div class="gauge-inner">
+                <span class="gauge-number" id="liveRiskValue">0</span>
+                <span class="gauge-unit">% RISK</span>
+              </div>
+            </div>
+          </div>
+          <div class="hud-status-badge safe" id="liveRiskStatusBadge">SAFE RANGE</div>
+        </div>
+
+        <!-- Gauge 2: Acoustic Voice-Clone Probability -->
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <span class="hud-title">ACOUSTIC CLONE PROBABILITY</span>
+            <span class="hud-tag">DSP ENGINE</span>
+          </div>
+          <div class="metric-meter-box">
+            <div class="metric-val-row">
+              <span class="metric-big-val" id="liveAcousticVal">0%</span>
+              <span class="metric-sublabel" id="liveAcousticVerdict">Natural Prosody</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill dsp-fill" id="liveAcousticFill" style="width: 0%;"></div>
+            </div>
+            <div class="metric-details-grid">
+              <div class="detail-item">
+                <span class="d-label">Pitch Micro-Jitter</span>
+                <span class="d-val" id="hudJitterVal">Normal (2.1%)</span>
+              </div>
+              <div class="detail-item">
+                <span class="d-label">Phase Coherence</span>
+                <span class="d-val" id="hudPhaseVal">Entropy High</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gauge 3: Social Engineering Scam Coercion Score -->
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <span class="hud-title">SCAM TACTICS & COERCION</span>
+            <span class="hud-tag">NLP CONTEXT</span>
+          </div>
+          <div class="metric-meter-box">
+            <div class="metric-val-row">
+              <span class="metric-big-val" id="liveContextVal">0%</span>
+              <span class="metric-sublabel" id="liveContextVerdict">No Threat Detected</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill context-fill" id="liveContextFill" style="width: 0%;"></div>
+            </div>
+            <div class="metric-details-grid">
+              <div class="detail-item">
+                <span class="d-label">Credential Solicit</span>
+                <span class="d-val" id="hudCredVal">None</span>
+              </div>
+              <div class="detail-item">
+                <span class="d-label">Urgency Coercion</span>
+                <span class="d-val" id="hudUrgencyVal">None</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dual Pane: Live Synchronized Transcript & Dangerous Segments -->
+      <div class="dual-pane-grid">
+        <!-- Left Pane: Synchronized Interactive Transcript -->
+        <div class="pane-card transcript-pane">
+          <div class="pane-header">
+            <div class="pane-title-group">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <h3>Synchronized Call Transcript</h3>
+            </div>
+            <span class="pane-badge">Click line to jump playhead</span>
+          </div>
+
+          <div class="transcript-scrollable" id="transcriptContainer">
+            <!-- Populated via Javascript -->
+          </div>
+        </div>
+
+        <!-- Right Pane: Dangerous Segments Breakdown -->
+        <div class="pane-card segments-pane">
+          <div class="pane-header">
+            <div class="pane-title-group">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <h3>Flagged Threat Segments</h3>
+            </div>
+            <span class="pane-badge danger" id="flaggedCountBadge">0 Flags</span>
+          </div>
+
+          <div class="segments-list" id="dangerousSegmentsContainer">
+            <!-- Populated via Javascript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Comprehensive Call Risk Conclusion Card -->
+      <div class="conclusion-card" id="conclusionCard">
+        <div class="conclusion-banner" id="conclusionBanner">
+          <div class="verdict-icon-box" id="verdictIcon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
+          <div class="verdict-text-group">
+            <span class="verdict-sub">CALL RISK EVALUATION VERDICT</span>
+            <h2 class="verdict-title" id="verdictTitle">CRITICAL RISK — SCAM DETECTED</h2>
+          </div>
+        </div>
+
+        <!-- Metrics 4-Col Grid -->
+        <div class="conclusion-metrics-grid">
+          <div class="c-metric-card">
+            <span class="c-label">Peak Risk Score</span>
+            <span class="c-val danger" id="concPeakRisk">81.9%</span>
+            <span class="c-sub">Highest danger point</span>
+          </div>
+          <div class="c-metric-card">
+            <span class="c-label">Acoustic Clone Score</span>
+            <span class="c-val warning" id="concAcousticScore">74.5%</span>
+            <span class="c-sub">Synthetic DSP similarity</span>
+          </div>
+          <div class="c-metric-card">
+            <span class="c-label">Dangerous Windows</span>
+            <span class="c-val danger" id="concDangerCount">2 Segments</span>
+            <span class="c-sub">High-severity periods</span>
+          </div>
+          <div class="c-metric-card">
+            <span class="c-label">Safe Ratio</span>
+            <span class="c-val safe" id="concSafeRatio">68.4%</span>
+            <span class="c-sub">Non-flagged audio time</span>
+          </div>
+        </div>
+
+        <!-- Executive Summary & Threat Breakdown -->
+        <div class="conclusion-body">
+          <div class="summary-section">
+            <h4 class="sub-heading">Executive Summary</h4>
+            <p class="summary-para" id="concExecutiveSummary">
+              Analysis summary loading...
+            </p>
+          </div>
+
+          <!-- DSP Acoustic Diagnostic Card -->
+          <div class="dsp-diagnostic-card">
+            <h4 class="sub-heading">Acoustic Forensics Details</h4>
+            <div class="dsp-specs-grid">
+              <div class="spec-row">
+                <span class="spec-name">Pitch Micro-Jitter</span>
+                <span class="spec-val" id="specJitter">Abnormally Low (&lt;0.008, Synthetic)</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-name">CQCC Spectral Flux</span>
+                <span class="spec-val" id="specShimmer">Monotone Synthesizer Trajectory</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-name">MODGDF Phase Coherence</span>
+                <span class="spec-val" id="specPhase">High Coherence Vocoder Fingerprint</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-name">Synthetic Voice Probability</span>
+                <span class="spec-val highlight" id="specProb">74.5%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detected Threat Tags -->
+          <div class="threats-tags-section" id="threatsTagsSection">
+            <h4 class="sub-heading">Detected Social Engineering Indicators</h4>
+            <div class="threats-badges-row" id="threatsBadgesContainer">
+              <!-- Populated via Javascript -->
+            </div>
+          </div>
+
+          <!-- Actionable Recommendations -->
+          <div class="recommendations-section">
+            <h4 class="sub-heading">Recommended Security Actions</h4>
+            <ul class="recs-list" id="recommendationsList">
+              <!-- Populated via Javascript -->
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-brand">VoiceGuard Neural Platform</span>
+        <span class="footer-copy">&bull; Real-time acoustic voice-clone & social engineering defense</span>
+      </div>
+      <div class="footer-right">
+        <span>AASIST + XGBoost + MODGDF + CQCC + Fast Jitter + Sarvam AI</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

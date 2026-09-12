@@ -116,11 +116,22 @@ class DynamoClient:
         without requiring AWS credentials at import time.
         """
         if self._table is None:
+            endpoint_url = settings.dynamodb_endpoint_url or None
+
+            # DynamoDB Local ignores credentials but boto3 still refuses to
+            # sign a request without them, so fall back to dummy values.
+            access_key = settings.aws_access_key_id or None
+            secret_key = settings.aws_secret_access_key or None
+            if endpoint_url and not (access_key and secret_key):
+                access_key = access_key or "local"
+                secret_key = secret_key or "local"
+
             self._resource = boto3.resource(
                 "dynamodb",
                 region_name=settings.aws_region,
-                aws_access_key_id=settings.aws_access_key_id or None,
-                aws_secret_access_key=settings.aws_secret_access_key or None,
+                endpoint_url=endpoint_url,
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_key,
             )
             self._table = self._resource.Table(settings.dynamodb_table_name)
             logger.info(
@@ -128,6 +139,7 @@ class DynamoClient:
                 extra={
                     "table_name": settings.dynamodb_table_name,
                     "region": settings.aws_region,
+                    "endpoint_url": endpoint_url or "aws",
                 },
             )
         return self._table

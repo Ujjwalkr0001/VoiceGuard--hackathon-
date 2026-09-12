@@ -33,6 +33,10 @@ logger = logging.getLogger(__name__)
 SARVAM_STT_URL = "https://api.sarvam.ai/speech-to-text-translate"
 SARVAM_TIMEOUT_SEC = 2.0  # Max wait for Sarvam API response
 
+# Sarvam retires old model versions server-side: a deprecated id makes the API
+# reject the request with HTTP 400, not fall back. Bump this when that happens.
+SARVAM_STT_MODEL = "saaras:v3"
+
 # Supported language codes for Sarvam AI
 SARVAM_LANGUAGES = {
     "hi-IN": "Hindi",
@@ -61,9 +65,12 @@ def _get_whisper_model():
             _whisper_model = whisper.load_model(WHISPER_MODEL_SIZE)
             logger.info("stt.whisper.loaded")
         except ImportError:
+            # NB: "msg" is a reserved LogRecord attribute — passing it via
+            # `extra` makes logging raise KeyError, turning this graceful
+            # degradation path into a hard crash.
             logger.error(
                 "stt.whisper.import_error",
-                extra={"msg": "openai-whisper not installed, fallback unavailable"},
+                extra={"detail": "openai-whisper not installed, fallback unavailable"},
             )
             return None
         except Exception as e:
@@ -146,7 +153,7 @@ async def transcribe_sarvam(
     }
     data = {
         "language_code": language_code,
-        "model": "saaras:v2",
+        "model": SARVAM_STT_MODEL,
         "with_timestamps": "false",
     }
 
@@ -176,7 +183,11 @@ async def transcribe_sarvam(
 
         transcript = result.get("transcript", "").strip()
         detected_lang = result.get("language_code", language_code)
-        confidence = float(result.get("confidence", 0.0))
+        # saaras:v3 reports "language_probability"; older responses used
+        # "confidence". Accept either so this survives another version bump.
+        confidence = float(
+            result.get("confidence", result.get("language_probability", 0.0)) or 0.0
+        )
 
         logger.debug(
             "stt.sarvam.success",

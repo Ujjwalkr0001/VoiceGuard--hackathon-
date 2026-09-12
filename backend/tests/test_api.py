@@ -16,9 +16,25 @@ from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, patch
 
 from app.main import app
+from app.routes.api import _rate_limiter
+from app.services.dynamo_client import dynamo_client
 
 # Valid API key (matches settings default)
 HEADERS = {"X-API-Key": "dev-api-key"}
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """
+    Clear the module-level rate limiter between tests.
+
+    The limiter allows 10 req/s per API key. TestClient fires requests far
+    faster than that, so without a reset later tests inherit an exhausted
+    bucket from earlier ones and see 429s.
+    """
+    _rate_limiter._buckets.clear()
+    yield
+    _rate_limiter._buckets.clear()
 
 
 @pytest.fixture

@@ -47,6 +47,11 @@ class Settings(BaseSettings):
 
     # ---- DynamoDB ----
     dynamodb_table_name: str = Field(default="call_sessions", description="DynamoDB table name")
+    dynamodb_endpoint_url: Optional[str] = Field(
+        default=None,
+        description="Custom DynamoDB endpoint (e.g. http://localhost:8001 for DynamoDB Local). "
+        "Leave unset to use real AWS.",
+    )
 
     # ---- S3 (optional debug dumps) ----
     s3_bucket_name: str = Field(default="voiceguard-debug", description="S3 bucket for debug dumps")

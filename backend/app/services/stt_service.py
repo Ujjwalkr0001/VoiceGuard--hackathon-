@@ -119,6 +119,7 @@ async def transcribe_sarvam(
     audio: np.ndarray,
     sample_rate: int,
     language_code: str = "auto",
+    timeout_sec: Optional[float] = None,
 ) -> Optional[Dict]:
     """
     Transcribe audio using the Sarvam AI STT API.
@@ -127,6 +128,7 @@ async def transcribe_sarvam(
         audio: Audio signal as float32 ndarray in [-1, 1].
         sample_rate: Sample rate in Hz.
         language_code: Language hint — 'hi-IN', 'en-IN', or 'auto'.
+        timeout_sec: Optional custom timeout in seconds (default SARVAM_TIMEOUT_SEC).
 
     Returns:
         Dict with keys:
@@ -139,6 +141,52 @@ async def transcribe_sarvam(
     api_key = settings.sarvam_api_key
     if not api_key:
         logger.warning("stt.sarvam.no_api_key")
+        return None
+
+    duration_sec = len(audio) / sample_rate
+
+    # Sarvam AI REST API has a strict 30-second audio limit per request.
+    # For audio longer than 25s, chunk into 18s slices and transcribe sequentially.
+    if duration_sec > 25.0:
+        slice_dur = 18.0
+        num_slices = int(duration_sec // slice_dur) + 1
+        all_transcripts = []
+        segments = []
+        last_lang = language_code
+        total_latency = 0.0
+
+        for i in range(num_slices):
+            t0 = i * slice_dur
+            t1 = min((i + 1) * slice_dur, duration_sec)
+            if t1 - t0 < 0.5:
+                continue
+            clip = audio[int(t0 * sample_rate):int(t1 * sample_rate)]
+            res = await transcribe_sarvam(
+                clip,
+                sample_rate,
+                language_code=language_code,
+                timeout_sec=timeout_sec,
+            )
+            if res and res.get("transcript"):
+                text = res["transcript"].strip()
+                all_transcripts.append(text)
+                last_lang = res.get("language", last_lang)
+                total_latency += res.get("latency_ms", 0.0)
+                segments.append({
+                    "start_sec": round(t0, 2),
+                    "end_sec": round(t1, 2),
+                    "text": text,
+                })
+
+        if all_transcripts:
+            return {
+                "transcript": " ".join(all_transcripts),
+                "language": last_lang,
+                "confidence": 1.0,
+                "source": "sarvam",
+                "segments": segments,
+                "latency_ms": round(total_latency, 1),
+            }
         return None
 
     wav_bytes = _pcm_to_wav_bytes(audio, sample_rate)
@@ -157,8 +205,10 @@ async def transcribe_sarvam(
         "with_timestamps": "false",
     }
 
+    effective_timeout = timeout_sec if timeout_sec is not None else SARVAM_TIMEOUT_SEC
+
     try:
-        async with httpx.AsyncClient(timeout=SARVAM_TIMEOUT_SEC) as client:
+        async with httpx.AsyncClient(timeout=effective_timeout) as client:
             t0 = time.monotonic()
             response = await client.post(
                 SARVAM_STT_URL,
@@ -319,6 +369,7 @@ async def transcribe(
     sample_rate: int,
     language_code: str = "auto",
     prefer_whisper: bool = False,
+    timeout_sec: Optional[float] = None,
 ) -> Dict:
     """
     Transcribe audio with automatic fallback.
@@ -331,6 +382,7 @@ async def transcribe(
         sample_rate: Sample rate in Hz.
         language_code: Language hint for Sarvam ('hi-IN', 'en-IN', 'auto').
         prefer_whisper: If True, skip Sarvam and go straight to Whisper.
+        timeout_sec: Custom timeout for API call in seconds.
 
     Returns:
         Dict with keys: transcript, language, confidence, source, latency_ms
@@ -340,7 +392,7 @@ async def transcribe(
 
     # Try Sarvam first (unless fallback-only mode)
     if not prefer_whisper:
-        result = await transcribe_sarvam(audio, sample_rate, language_code)
+        result = await transcribe_sarvam(audio, sample_rate, language_code, timeout_sec=timeout_sec)
 
     # Fallback to Whisper if Sarvam failed
     if result is None:

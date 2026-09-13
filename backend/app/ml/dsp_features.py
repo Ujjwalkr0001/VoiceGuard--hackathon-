@@ -587,7 +587,9 @@ def fast_pitch_jitter(
         f0_slope = 0.0
 
     f0_diffs = np.abs(np.diff(f0_voiced))
-    jitter_abs = float(np.mean(f0_diffs)) if len(f0_diffs) > 0 else 0.0
+    # Filter octave doubling / boundary jumps (> 25% of mean F0) to isolate true micro-perturbation
+    valid_diffs = f0_diffs[f0_diffs < 0.25 * f0_mean] if len(f0_diffs) > 0 else np.array([])
+    jitter_abs = float(np.mean(valid_diffs)) if len(valid_diffs) > 0 else 0.0
     jitter_rel = float(jitter_abs / (f0_mean + 1e-10))
 
     amp_voiced = amplitudes[voiced_mask]

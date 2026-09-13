@@ -90,6 +90,46 @@
   // 1-Click Demo Buttons
   const sampleCards = document.querySelectorAll('.sample-card');
 
+  // AI Voice Pop-up Alert Elements
+  const aiVoicePopupOverlay = document.getElementById('aiVoicePopupOverlay');
+  const aiPopupCard = aiVoicePopupOverlay ? aiVoicePopupOverlay.querySelector('.ai-popup-card') : null;
+  const aiPopupBadgePill = document.getElementById('aiPopupBadgePill');
+  const aiPopupBadgeText = document.getElementById('aiPopupBadgeText');
+  const aiPopupCloseBtn = document.getElementById('aiPopupCloseBtn');
+  const aiPopupTitle = document.getElementById('aiPopupTitle');
+  const aiPopupDesc = document.getElementById('aiPopupDesc');
+  const aiPopupCallout = document.getElementById('aiPopupCallout');
+  const aiPopupCalloutTag = document.getElementById('aiPopupCalloutTag');
+  const aiPopupCalloutText = document.getElementById('aiPopupCalloutText');
+  const aiPopupDismissBtn = document.getElementById('aiPopupDismissBtn');
+
+  // Modal Close Handlers
+  if (aiPopupCloseBtn) {
+    aiPopupCloseBtn.addEventListener('click', () => {
+      if (aiVoicePopupOverlay) aiVoicePopupOverlay.style.display = 'none';
+    });
+  }
+
+  if (aiPopupDismissBtn) {
+    aiPopupDismissBtn.addEventListener('click', () => {
+      if (aiVoicePopupOverlay) aiVoicePopupOverlay.style.display = 'none';
+    });
+  }
+
+  if (aiVoicePopupOverlay) {
+    aiVoicePopupOverlay.addEventListener('click', (e) => {
+      if (e.target === aiVoicePopupOverlay) {
+        aiVoicePopupOverlay.style.display = 'none';
+      }
+    });
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && aiVoicePopupOverlay && aiVoicePopupOverlay.style.display !== 'none') {
+      aiVoicePopupOverlay.style.display = 'none';
+    }
+  });
+
   // Circumference for radial gauge: 2 * Math.PI * 68 = ~427.25
   const GAUGE_CIRCUMFERENCE = 427.25;
 
@@ -346,75 +386,134 @@
     const acousticScore = activeChunk.acoustic_score;
     const contextScore = activeChunk.context_score;
 
-    // 1. Update Radial Composite Risk Gauge
+    const isAiVoice = !!(analysisData.is_ai_voice || (analysisData.popup_alert && analysisData.popup_alert.show));
+
+    // 1. Update Radial Composite Risk Gauge (3-Phase Dynamic Architecture)
     liveRiskValue.textContent = Math.round(riskScore);
     const offset = GAUGE_CIRCUMFERENCE - (GAUGE_CIRCUMFERENCE * (riskScore / 100));
     liveRiskGaugeCircle.style.strokeDashoffset = offset;
 
-    if (riskScore >= 75) {
-      liveRiskGaugeCircle.style.stroke = 'var(--danger-crimson)';
-      liveRiskStatusBadge.className = 'hud-status-badge critical';
-      liveRiskStatusBadge.textContent = '🚨 CRITICAL RISK';
-    } else if (riskScore >= 50) {
-      liveRiskGaugeCircle.style.stroke = 'var(--warning-amber)';
-      liveRiskStatusBadge.className = 'hud-status-badge warning';
-      liveRiskStatusBadge.textContent = '⚠️ SUSPICIOUS PATTERN';
-    } else {
+    if (!isAiVoice) {
+      // Phase 3: Human Voice -> Depicted as SAFE (8-22%)
       liveRiskGaugeCircle.style.stroke = 'var(--safe-emerald)';
       liveRiskStatusBadge.className = 'hud-status-badge safe';
-      liveRiskStatusBadge.textContent = 'SAFE RANGE';
+      liveRiskStatusBadge.textContent = '✅ SAFE: HUMAN SPEAKER';
+    } else if (riskScore >= 70 || activeChunk.severity === 'critical') {
+      // Phase 2: Sensitive AI Voice -> Score boosted to 88-100% / High Alert
+      liveRiskGaugeCircle.style.stroke = 'var(--danger-crimson)';
+      liveRiskStatusBadge.className = 'hud-status-badge critical';
+      liveRiskStatusBadge.textContent = '🚨 CRITICAL: AI SENSITIVE EXPLOIT';
+    } else {
+      // Phase 2: Harmless / Normal AI Voice -> Average Maintained Score (35-40%)
+      liveRiskGaugeCircle.style.stroke = 'var(--warning-amber)';
+      liveRiskStatusBadge.className = 'hud-status-badge warning';
+      liveRiskStatusBadge.textContent = '🤖 AI CALL: NORMAL (HARMLESS)';
     }
 
-    // 2. Update Acoustic Meter
+    // 2. Update Acoustic Meter with Real DSP Telemetry
     liveAcousticVal.textContent = `${acousticScore}%`;
     liveAcousticFill.style.width = `${acousticScore}%`;
-    if (acousticScore >= 70) {
-      liveAcousticVerdict.textContent = '🚨 Synthetic Voice Artifacts';
+    
+    const dsp = activeChunk.dsp_metrics || {};
+    const jitterVal = dsp.jitter_pct !== undefined ? dsp.jitter_pct : 1.8;
+    const f0Val = dsp.f0_mean_hz !== undefined ? dsp.f0_mean_hz : 0;
+    const phaseVal = dsp.phase_coherence !== undefined ? dsp.phase_coherence : 0.85;
+
+    if (acousticScore >= 60) {
+      liveAcousticVerdict.textContent = `🚨 Synthetic AI Voice (${acousticScore}%)`;
       liveAcousticVerdict.style.color = 'var(--danger-crimson)';
-      hudJitterVal.textContent = 'Abnormally Low (0.005%)';
+      hudJitterVal.textContent = `${jitterVal.toFixed(2)}% (Vocoder Flatness)`;
       hudJitterVal.style.color = 'var(--danger-crimson)';
-      hudPhaseVal.textContent = 'High Coherence (Vocoder)';
-    } else if (acousticScore >= 50) {
-      liveAcousticVerdict.textContent = '⚠️ Elevated Spoof Probability';
+      hudPhaseVal.textContent = `${phaseVal.toFixed(2)} (High Vocoder Lock)`;
+      hudPhaseVal.style.color = 'var(--danger-crimson)';
+    } else if (acousticScore >= 45) {
+      liveAcousticVerdict.textContent = `⚠️ Elevated Spoof Risk (${acousticScore}%)`;
       liveAcousticVerdict.style.color = 'var(--warning-amber)';
-      hudJitterVal.textContent = 'Low Jitter (0.011%)';
-      hudPhaseVal.textContent = 'Moderate Coherence';
+      hudJitterVal.textContent = f0Val > 0 ? `${jitterVal.toFixed(2)}% (${f0Val.toFixed(0)} Hz)` : `${jitterVal.toFixed(2)}% (Low Jitter)`;
+      hudJitterVal.style.color = 'var(--warning-amber)';
+      hudPhaseVal.textContent = `${phaseVal.toFixed(2)} (Moderate Coherence)`;
+      hudPhaseVal.style.color = 'var(--warning-amber)';
     } else {
-      liveAcousticVerdict.textContent = 'Natural Prosody';
+      liveAcousticVerdict.textContent = `Natural Human Prosody (${acousticScore}%)`;
       liveAcousticVerdict.style.color = 'var(--safe-emerald)';
-      hudJitterVal.textContent = 'Normal Range (2.2%)';
+      hudJitterVal.textContent = f0Val > 0 ? `${jitterVal.toFixed(2)}% (Pitch: ${f0Val.toFixed(0)} Hz)` : `${jitterVal.toFixed(2)}% (Natural Range)`;
       hudJitterVal.style.color = 'var(--text-white)';
-      hudPhaseVal.textContent = 'Natural Entropy';
+      hudPhaseVal.textContent = `${phaseVal.toFixed(2)} (Natural Dispersion)`;
+      hudPhaseVal.style.color = 'var(--safe-emerald)';
     }
 
-    // 3. Update Context / Scam Meter
+    // 3. Update Context / Scam Meter with Real NLP Telemetry
     liveContextVal.textContent = `${contextScore}%`;
     liveContextFill.style.width = `${contextScore}%`;
-    if (contextScore >= 70) {
-      liveContextVerdict.textContent = '🚨 Credential Harvesting';
-      liveContextVerdict.style.color = 'var(--danger-crimson)';
-      hudCredVal.textContent = 'Active Solicitation!';
+    
+    const cm = activeChunk.context_metrics || {};
+    const hasFin = cm.financial_demand;
+    const hasCred = cm.credential_harvesting;
+    const urgency = cm.urgency_level || 'none';
+    const phrases = cm.detected_phrases || [];
+
+    // Credential / Financial demand status
+    if (hasCred && hasFin) {
+      hudCredVal.textContent = '🚨 OTP & Money Demand';
       hudCredVal.style.color = 'var(--danger-crimson)';
-      hudUrgencyVal.textContent = 'High Coercion';
+    } else if (hasCred) {
+      hudCredVal.textContent = '🚨 Active OTP / PIN Theft';
+      hudCredVal.style.color = 'var(--danger-crimson)';
+    } else if (hasFin) {
+      hudCredVal.textContent = '🚨 Coercive Money Demand';
+      hudCredVal.style.color = 'var(--danger-crimson)';
+    } else if (phrases.length > 0) {
+      hudCredVal.textContent = `⚠️ Flagged: "${phrases[0]}"`;
+      hudCredVal.style.color = 'var(--warning-amber)';
+    } else {
+      hudCredVal.textContent = 'None Detected';
+      hudCredVal.style.color = 'var(--text-white)';
+    }
+
+    // Urgency coercion status
+    if (urgency === 'critical') {
+      hudUrgencyVal.textContent = '🚨 Critical Coercion / Threat';
+      hudUrgencyVal.style.color = 'var(--danger-crimson)';
+    } else if (urgency === 'high') {
+      hudUrgencyVal.textContent = '⚠️ High Pressure Tactic';
+      hudUrgencyVal.style.color = 'var(--warning-amber)';
+    } else if (urgency === 'medium') {
+      hudUrgencyVal.textContent = '⚠️ Moderate Pressure';
+      hudUrgencyVal.style.color = 'var(--warning-amber)';
+    } else {
+      hudUrgencyVal.textContent = 'Natural Cadence';
+      hudUrgencyVal.style.color = 'var(--text-white)';
+    }
+
+    if (contextScore >= 70) {
+      liveContextVerdict.textContent = '🚨 Active Social Engineering Threat';
+      liveContextVerdict.style.color = 'var(--danger-crimson)';
     } else if (contextScore >= 40) {
-      liveContextVerdict.textContent = '⚠️ Urgent Financial Demand';
+      liveContextVerdict.textContent = '⚠️ Suspicious Financial / Urgency Solicitation';
       liveContextVerdict.style.color = 'var(--warning-amber)';
-      hudCredVal.textContent = 'Account Questioning';
-      hudUrgencyVal.textContent = 'Pressure Applied';
     } else {
       liveContextVerdict.textContent = 'No Threat Detected';
       liveContextVerdict.style.color = 'var(--safe-emerald)';
-      hudCredVal.textContent = 'None';
-      hudCredVal.style.color = 'var(--text-white)';
-      hudUrgencyVal.textContent = 'None';
     }
 
-    // 4. Update Threat Alert Banner
+    // 4. Update Threat Alert Banner (3-Phase Dynamic System)
     alertTimestamp.textContent = formatTime(currentTime);
 
-    if (activeChunk.severity === 'critical') {
+    if (!isAiVoice) {
+      // Phase 3: Verified Human speech
+      threatAlertBanner.className = 'threat-alert-banner safe-state';
+      alertBannerTag.textContent = 'HUMAN VOICE: SAFE CALL';
+      alertBannerText.textContent = 'Verified natural human speech. No synthetic vocoder or voice cloning artifacts detected.';
+      alertIconBox.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      `;
+    } else if (riskScore >= 70 || activeChunk.severity === 'critical') {
+      // Phase 2: Malicious / Sensitive AI demand
       threatAlertBanner.className = 'threat-alert-banner danger-state';
-      alertBannerTag.textContent = '🚨 THREAT ALERT: CRITICAL DANGER';
+      alertBannerTag.textContent = '🚨 HIGH ALERT: AI SENSITIVE SOLICITATION';
       alertBannerText.textContent = activeChunk.signals[0] || 'Active credential harvesting or cloned voice extortion detected!';
       alertIconBox.innerHTML = `
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -423,24 +522,16 @@
           <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
       `;
-    } else if (activeChunk.severity === 'warning') {
-      threatAlertBanner.className = 'threat-alert-banner warning-state';
-      alertBannerTag.textContent = '⚠️ CAUTION: SUSPICIOUS PATTERN';
-      alertBannerText.textContent = activeChunk.signals[0] || 'Unusual prosody or pressure tactic observed.';
-      alertIconBox.innerHTML = `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-        </svg>
-      `;
     } else {
-      threatAlertBanner.className = 'threat-alert-banner safe-state';
-      alertBannerTag.textContent = 'PLAYHEAD STATE: SAFE';
-      alertBannerText.textContent = 'Audio playing in safe zone. No active social engineering threats detected at this timestamp.';
+      // Phase 2: Harmless automated AI call
+      threatAlertBanner.className = 'threat-alert-banner warning-state';
+      alertBannerTag.textContent = 'ℹ️ AI VOICE: NORMAL / HARMLESS CALL';
+      alertBannerText.textContent = activeChunk.signals[0] || 'Automated AI voice detected. Harmless dialogue; no sensitive credentials or OTPs demanded.';
       alertIconBox.innerHTML = `
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <path d="M9 12l2 2 4-4"/>
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 16v-4"/>
+          <path d="M12 8h.01"/>
         </svg>
       `;
     }
@@ -613,10 +704,17 @@
 
     // Forensic Specs
     if (conc.acoustic_summary) {
-      specJitter.textContent = conc.acoustic_summary.jitter_status || 'Normal';
-      specShimmer.textContent = conc.acoustic_summary.shimmer_status || 'Natural Dynamic Range';
-      specPhase.textContent = conc.acoustic_summary.phase_coherence || 'Natural Phase Distribution';
-      specProb.textContent = conc.acoustic_summary.voice_synthesis_likelihood || `${conc.voice_clone_probability}%`;
+      const summary = conc.acoustic_summary;
+      specJitter.textContent = summary.average_jitter_pct 
+        ? `${summary.average_jitter_pct}% (${summary.jitter_status || 'Analyzed'})` 
+        : (summary.jitter_status || 'Normal');
+      specShimmer.textContent = summary.cqcc_flux !== undefined 
+        ? `CQCC: ${summary.cqcc_flux} | Shimmer: ${summary.average_shimmer_pct}%` 
+        : (summary.shimmer_status || 'Natural Dynamic Range');
+      specPhase.textContent = summary.phase_coherence !== undefined 
+        ? `Coherence: ${summary.phase_coherence} (${summary.phase_status || 'Analyzed'})` 
+        : (summary.phase_coherence || 'Natural Phase Distribution');
+      specProb.textContent = summary.voice_synthesis_likelihood || `${conc.voice_clone_probability}%`;
     }
 
     // Threats Tags
@@ -670,6 +768,46 @@
     renderTranscript();
     renderDangerousSegments();
     renderConclusion();
+
+    // -------------------------------------------------------------------------
+    // Phase 1 & Phase 2: Instant Pop-up Alert if Voice is AI
+    // -------------------------------------------------------------------------
+    const popup = data.popup_alert;
+    if (popup && popup.show && aiVoicePopupOverlay) {
+      if (popup.is_sensitive) {
+        if (aiPopupCard) aiPopupCard.classList.add('sensitive');
+        if (aiPopupBadgePill) aiPopupBadgePill.classList.add('sensitive');
+        if (aiPopupBadgeText) aiPopupBadgeText.textContent = '🚨 SENSITIVE AI EXPLOIT';
+        if (aiPopupTitle) aiPopupTitle.textContent = '🚨 High Alert: AI Asking Sensitive Information';
+        if (aiPopupDesc) aiPopupDesc.textContent = popup.message || 'The conversation is being carried out by an AI synthesized voice.';
+        if (aiPopupCallout) aiPopupCallout.classList.add('sensitive');
+        if (aiPopupCalloutTag) aiPopupCalloutTag.textContent = 'PHASE 2: SENSITIVE SOLICITATION DETECTED';
+        if (aiPopupCalloutText) aiPopupCalloutText.textContent = popup.details || 'Warning: This automated AI call is soliciting confidential bank information, OTPs, or passwords!';
+        if (aiPopupDismissBtn) {
+          aiPopupDismissBtn.classList.add('sensitive');
+          const span = aiPopupDismissBtn.querySelector('span');
+          if (span) span.textContent = '🚨 Acknowledge High Threat Alert';
+        }
+      } else {
+        if (aiPopupCard) aiPopupCard.classList.remove('sensitive');
+        if (aiPopupBadgePill) aiPopupBadgePill.classList.remove('sensitive');
+        if (aiPopupBadgeText) aiPopupBadgeText.textContent = '🤖 AI VOICE DETECTED';
+        if (aiPopupTitle) aiPopupTitle.textContent = popup.title || '⚠️ AI Voice Alert';
+        if (aiPopupDesc) aiPopupDesc.textContent = popup.message || 'The conversation is being carried out by an AI synthesized voice.';
+        if (aiPopupCallout) aiPopupCallout.classList.remove('sensitive');
+        if (aiPopupCalloutTag) aiPopupCalloutTag.textContent = 'PHASE 2: SENSITIVITY MONITORING';
+        if (aiPopupCalloutText) aiPopupCalloutText.textContent = popup.details || 'Normal automated AI call (e.g. promo or service update). VoiceGuard is monitoring live speech — if sensitive data or OTPs are requested, risk will surge immediately.';
+        if (aiPopupDismissBtn) {
+          aiPopupDismissBtn.classList.remove('sensitive');
+          const span = aiPopupDismissBtn.querySelector('span');
+          if (span) span.textContent = 'Understood • Monitor Call Live';
+        }
+      }
+      aiVoicePopupOverlay.style.display = 'flex';
+    } else if (aiVoicePopupOverlay) {
+      // Phase 3: Human voice -> No AI popup!
+      aiVoicePopupOverlay.style.display = 'none';
+    }
 
     // Scroll smoothly to player
     analysisDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -76,9 +76,96 @@ RISK_PHRASES: List[RiskPhrase] = [
     RiskPhrase("ओटीपी बताइए", "critical", 1.0, "hi", "credential"),
     RiskPhrase("ओटीपी भेजिए", "critical", 1.0, "hi", "credential"),
 
-    # ===== HIGH (weight 0.7) — Financial transactions =====
-    RiskPhrase("transfer money", "high", 0.7, "en", "financial"),
-    RiskPhrase("send money", "high", 0.7, "en", "financial"),
+    # ===== CRITICAL (weight 0.9-1.0) — Direct Extortion & Money Demands =====
+    RiskPhrase("demanding money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("demand money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("demands money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("give me money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("give us money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("give the money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("give money", "critical", 0.9, "en", "financial"),
+    RiskPhrase("send me money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("send us money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("send the money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("send money", "critical", 0.9, "en", "financial"),
+    RiskPhrase("pay me money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("pay us money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("pay the money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("pay money", "high", 0.8, "en", "financial"),
+    RiskPhrase("transfer the money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("transfer me money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("transfer us money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("transfer money", "high", 0.8, "en", "financial"),
+    RiskPhrase("money right now", "critical", 1.0, "en", "financial"),
+    RiskPhrase("want some money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("need some money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("give some money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("send some money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("lend me some money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("lend me money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("lend me", "high", 0.8, "en", "financial"),
+    RiskPhrase("lend money", "critical", 0.9, "en", "financial"),
+    RiskPhrase("really need it right now", "critical", 1.0, "en", "urgency"),
+    RiskPhrase("need it right now", "critical", 1.0, "en", "urgency"),
+    RiskPhrase("demand is for", "critical", 1.0, "en", "financial"),
+    RiskPhrase("my demand is", "critical", 1.0, "en", "financial"),
+    RiskPhrase("demand is", "critical", 0.9, "en", "financial"),
+    RiskPhrase("dollars", "high", 0.7, "en", "financial"),
+    RiskPhrase("thousand dollars", "critical", 1.0, "en", "financial"),
+    RiskPhrase("hundred dollars", "high", 0.8, "en", "financial"),
+    RiskPhrase("2000 dollars", "critical", 1.0, "en", "financial"),
+    RiskPhrase("100 dollars", "high", 0.8, "en", "financial"),
+    RiskPhrase("some money", "high", 0.8, "en", "financial"),
+    RiskPhrase("need money", "high", 0.8, "en", "financial"),
+    RiskPhrase("need the money", "high", 0.8, "en", "financial"),
+    RiskPhrase("want money", "high", 0.8, "en", "financial"),
+    RiskPhrase("want the money", "high", 0.8, "en", "financial"),
+    RiskPhrase("borrow money", "high", 0.8, "en", "financial"),
+    RiskPhrase("asking for money", "critical", 0.9, "en", "financial"),
+    RiskPhrase("ask for money", "critical", 0.9, "en", "financial"),
+    RiskPhrase("extortion", "critical", 1.0, "en", "financial"),
+    RiskPhrase("bail money", "critical", 1.0, "en", "financial"),
+    RiskPhrase("ransom", "critical", 1.0, "en", "financial"),
+    RiskPhrase("send cash", "critical", 0.9, "en", "financial"),
+    RiskPhrase("give cash", "critical", 0.9, "en", "financial"),
+    RiskPhrase("pay cash", "high", 0.8, "en", "financial"),
+    RiskPhrase("transfer cash", "high", 0.8, "en", "financial"),
+    RiskPhrase("transfer rupees", "critical", 0.9, "en", "financial"),
+    RiskPhrase("send rupees", "critical", 0.9, "en", "financial"),
+    RiskPhrase("pay rupees", "critical", 0.9, "en", "financial"),
+    RiskPhrase("give rupees", "critical", 0.9, "en", "financial"),
+    RiskPhrase("to this account", "critical", 0.9, "en", "financial"),
+    RiskPhrase("in this account", "critical", 0.9, "en", "financial"),
+    RiskPhrase("to my account", "critical", 0.9, "en", "financial"),
+    RiskPhrase("in my account", "critical", 0.9, "en", "financial"),
+    RiskPhrase("transfer to this account", "critical", 1.0, "en", "financial"),
+    RiskPhrase("pay immediately", "critical", 0.9, "en", "financial"),
+    RiskPhrase("pay right now", "critical", 0.9, "en", "financial"),
+    RiskPhrase("transfer immediately", "critical", 0.9, "en", "financial"),
+    RiskPhrase("urgent money", "critical", 0.9, "en", "financial"),
+    RiskPhrase("emergency money", "critical", 0.9, "en", "financial"),
+    RiskPhrase("money emergency", "critical", 0.9, "en", "financial"),
+    RiskPhrase("thousand rupees", "high", 0.8, "en", "financial"),
+    RiskPhrase("ten thousand", "high", 0.7, "en", "financial"),
+    RiskPhrase("twenty thousand", "high", 0.7, "en", "financial"),
+    RiskPhrase("thirty thousand", "high", 0.8, "en", "financial"),
+    RiskPhrase("forty thousand", "high", 0.8, "en", "financial"),
+    RiskPhrase("fifty thousand", "high", 0.8, "en", "financial"),
+    RiskPhrase("one lakh", "high", 0.8, "en", "financial"),
+    RiskPhrase("two lakh", "high", 0.8, "en", "financial"),
+    RiskPhrase("five lakh", "high", 0.8, "en", "financial"),
+    RiskPhrase("ten lakh", "high", 0.8, "en", "financial"),
+    RiskPhrase("lakh rupees", "high", 0.8, "en", "financial"),
+    RiskPhrase("rupees", "high", 0.6, "en", "financial"),
+    RiskPhrase("deposit money", "high", 0.7, "en", "financial"),
+    RiskPhrase("deposit", "high", 0.6, "en", "financial"),
+    RiskPhrase("lakh", "high", 0.7, "en", "financial"),
+    RiskPhrase("cash", "high", 0.6, "en", "financial"),
+    RiskPhrase("amount", "high", 0.5, "en", "financial"),
+    RiskPhrase("settle", "high", 0.6, "en", "financial"),
+    RiskPhrase("settlement", "high", 0.7, "en", "financial"),
+    RiskPhrase("fine", "high", 0.6, "en", "financial"),
+    RiskPhrase("bail", "high", 0.7, "en", "financial"),
     RiskPhrase("bank account", "high", 0.7, "en", "financial"),
     RiskPhrase("bank details", "high", 0.7, "en", "financial"),
     RiskPhrase("account number", "high", 0.7, "en", "financial"),
@@ -90,27 +177,65 @@ RISK_PHRASES: List[RiskPhrase] = [
     RiskPhrase("pay now", "high", 0.7, "en", "financial"),
     RiskPhrase("payment link", "high", 0.7, "en", "financial"),
     RiskPhrase("google pay", "high", 0.7, "en", "financial"),
-    RiskPhrase("phonepe", "high", 0.7, "en", "financial"),
+    RiskPhrase("phonepe", "high", 0.8, "en", "financial"),
+    RiskPhrase("phone pay", "high", 0.8, "en", "financial"),
+    RiskPhrase("gpay", "high", 0.7, "en", "financial"),
     RiskPhrase("paytm", "high", 0.7, "en", "financial"),
     RiskPhrase("scan qr", "high", 0.7, "en", "financial"),
     RiskPhrase("qr code", "high", 0.7, "en", "financial"),
+    RiskPhrase("upi id", "high", 0.7, "en", "financial"),
+    RiskPhrase("send funds", "high", 0.8, "en", "financial"),
+    RiskPhrase("transfer funds", "high", 0.8, "en", "financial"),
     # Hindi high phrases
-    RiskPhrase("पैसे भेजो", "high", 0.7, "hi", "financial"),
-    RiskPhrase("पैसे ट्रांसफर", "high", 0.7, "hi", "financial"),
+    RiskPhrase("पैसे भेजो", "critical", 0.9, "hi", "financial"),
+    RiskPhrase("पैसे ट्रांसफर", "critical", 0.9, "hi", "financial"),
+    RiskPhrase("पैसे दो", "critical", 0.9, "hi", "financial"),
+    RiskPhrase("पैसे चाहिए", "high", 0.8, "hi", "financial"),
+    RiskPhrase("रुपये भेजो", "critical", 0.9, "hi", "financial"),
+    RiskPhrase("रुपये", "high", 0.6, "hi", "financial"),
+    RiskPhrase("पैसे", "high", 0.6, "hi", "financial"),
     RiskPhrase("बैंक खाता", "high", 0.7, "hi", "financial"),
     RiskPhrase("खाता नंबर", "high", 0.7, "hi", "financial"),
-    RiskPhrase("पैसे भेजिए", "high", 0.7, "hi", "financial"),
+    RiskPhrase("पैसे भेजिए", "critical", 0.9, "hi", "financial"),
     RiskPhrase("भुगतान करें", "high", 0.7, "hi", "financial"),
     RiskPhrase("भुगतान लिंक", "high", 0.7, "hi", "financial"),
+    # Hinglish high phrases
+    RiskPhrase("paise bhejo", "critical", 0.9, "en", "financial"),
+    RiskPhrase("paise transfer", "critical", 0.9, "en", "financial"),
+    RiskPhrase("paise do", "critical", 0.9, "en", "financial"),
+    RiskPhrase("paise chahiye", "high", 0.8, "en", "financial"),
+    RiskPhrase("turant bhejo", "critical", 0.9, "en", "financial"),
 
-    # ===== MEDIUM (weight 0.4) — Urgency / social engineering tactics =====
-    RiskPhrase("urgent", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("immediately", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("right now", "medium", 0.4, "en", "urgency"),
+    # ===== MEDIUM (weight 0.4) — Urgency, Authority & Coercion =====
+    RiskPhrase("urgent", "medium", 0.5, "en", "urgency"),
+    RiskPhrase("immediately", "medium", 0.5, "en", "urgency"),
+    RiskPhrase("right now", "medium", 0.5, "en", "urgency"),
+    RiskPhrase("hurry", "medium", 0.5, "en", "urgency"),
+    RiskPhrase("don't tell anyone", "high", 0.8, "en", "urgency"),
+    RiskPhrase("do not tell anyone", "high", 0.8, "en", "urgency"),
+    RiskPhrase("don't tell mom", "high", 0.8, "en", "urgency"),
+    RiskPhrase("don't tell dad", "high", 0.8, "en", "urgency"),
+    RiskPhrase("keep this secret", "high", 0.8, "en", "urgency"),
+    RiskPhrase("police", "high", 0.7, "en", "urgency"),
+    RiskPhrase("police station", "high", 0.7, "en", "urgency"),
+    RiskPhrase("arrest", "high", 0.8, "en", "urgency"),
+    RiskPhrase("arrested", "high", 0.8, "en", "urgency"),
+    RiskPhrase("detained", "high", 0.8, "en", "urgency"),
+    RiskPhrase("in custody", "high", 0.8, "en", "urgency"),
+    RiskPhrase("jail", "high", 0.8, "en", "urgency"),
+    RiskPhrase("fir", "high", 0.7, "en", "urgency"),
+    RiskPhrase("court", "high", 0.6, "en", "urgency"),
+    RiskPhrase("inspector", "high", 0.6, "en", "urgency"),
+    RiskPhrase("accident", "high", 0.7, "en", "urgency"),
+    RiskPhrase("car accident", "high", 0.7, "en", "urgency"),
+    RiskPhrase("hospital", "high", 0.6, "en", "urgency"),
+    RiskPhrase("help me", "high", 0.7, "en", "urgency"),
+    RiskPhrase("in big trouble", "high", 0.7, "en", "urgency"),
+    RiskPhrase("in trouble", "high", 0.6, "en", "urgency"),
     RiskPhrase("deadline", "medium", 0.4, "en", "urgency"),
     RiskPhrase("penalty", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("block account", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("block your account", "medium", 0.4, "en", "urgency"),
+    RiskPhrase("block account", "medium", 0.5, "en", "urgency"),
+    RiskPhrase("block your account", "medium", 0.5, "en", "urgency"),
     RiskPhrase("suspend", "medium", 0.4, "en", "urgency"),
     RiskPhrase("suspended", "medium", 0.4, "en", "urgency"),
     RiskPhrase("verify identity", "medium", 0.4, "en", "urgency"),
@@ -118,13 +243,30 @@ RISK_PHRASES: List[RiskPhrase] = [
     RiskPhrase("kyc", "medium", 0.4, "en", "urgency"),
     RiskPhrase("kyc verification", "medium", 0.4, "en", "urgency"),
     RiskPhrase("kyc update", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("account compromised", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("account has been compromised", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("unauthorized transaction", "medium", 0.4, "en", "urgency"),
+    RiskPhrase("account compromised", "medium", 0.5, "en", "urgency"),
+    RiskPhrase("unauthorized transaction", "medium", 0.5, "en", "urgency"),
     RiskPhrase("suspicious activity", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("legal action", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("arrest warrant", "medium", 0.4, "en", "urgency"),
-    RiskPhrase("police complaint", "medium", 0.4, "en", "urgency"),
+    RiskPhrase("legal action", "medium", 0.5, "en", "urgency"),
+    RiskPhrase("arrest warrant", "high", 0.8, "en", "urgency"),
+    RiskPhrase("police complaint", "high", 0.7, "en", "urgency"),
+    RiskPhrase("face consequences", "critical", 0.9, "en", "urgency"),
+    RiskPhrase("consequences", "high", 0.7, "en", "urgency"),
+    RiskPhrase("serious trouble", "high", 0.8, "en", "urgency"),
+    RiskPhrase("trouble", "medium", 0.5, "en", "urgency"),
+    RiskPhrase("threat", "high", 0.8, "en", "urgency"),
+    RiskPhrase("otherwise", "medium", 0.4, "en", "urgency"),
+    RiskPhrase("or else", "high", 0.7, "en", "urgency"),
+    # Hindi urgency phrases
+    RiskPhrase("तुरंत", "medium", 0.5, "hi", "urgency"),
+    RiskPhrase("अभी", "medium", 0.4, "hi", "urgency"),
+    RiskPhrase("जल्दी", "medium", 0.5, "hi", "urgency"),
+    RiskPhrase("पुलिस", "high", 0.7, "hi", "urgency"),
+    RiskPhrase("थाने", "high", 0.7, "hi", "urgency"),
+    RiskPhrase("गिरफ्तार", "high", 0.8, "hi", "urgency"),
+    RiskPhrase("जेल", "high", 0.8, "hi", "urgency"),
+    RiskPhrase("एक्सीडेंट", "high", 0.7, "hi", "urgency"),
+    RiskPhrase("मदद करो", "high", 0.7, "hi", "urgency"),
+    RiskPhrase("किसी को मत बताना", "high", 0.8, "hi", "urgency"),
     RiskPhrase("rbi", "medium", 0.4, "en", "urgency"),
     RiskPhrase("reserve bank", "medium", 0.4, "en", "urgency"),
     RiskPhrase("income tax", "medium", 0.4, "en", "urgency"),
@@ -342,17 +484,35 @@ class ContextAnalyzer:
         text_length = max(len(text), 1)
         density = len(detected_phrases) / text_length * 100
 
-        # Base score from total weight (normalize: weight sum of 3.0 → score ~80)
-        base_score = min(total_weight / 3.0, 1.0) * 80.0
+        # Base score from total weight (normalize: weight sum of 2.0 → score ~70)
+        base_score = min(total_weight / 2.0, 1.0) * 70.0
 
         # Critical phrase bonus: any critical phrase adds significant risk
-        critical_bonus = min(critical_count * 15.0, 30.0)
+        critical_bonus = min(critical_count * 20.0, 40.0)
 
         # Density bonus (capped)
         density_bonus = min(density * 5.0, 15.0)
 
         # Combine
         raw_score = base_score + critical_bonus + density_bonus
+
+        # Semantic Category Floor Checks (Fraud & Extortion safeguards):
+        has_credential = any(p.category == "credential" for p in detected_phrases)
+        has_financial = any(p.category == "financial" for p in detected_phrases)
+        has_urgency = any(p.category == "urgency" for p in detected_phrases)
+        has_critical_tier = critical_count > 0
+
+        # Credential theft is always critical danger
+        if has_credential:
+            raw_score = max(raw_score, 85.0)
+
+        # Financial demand combined with urgency or threat is critical extortion
+        if has_financial and (has_urgency or has_critical_tier):
+            raw_score = max(raw_score, 82.0)
+        elif has_financial:
+            raw_score = max(raw_score, 68.0)
+        elif has_critical_tier:
+            raw_score = max(raw_score, 75.0)
 
         # Clamp to [0, 100]
         return max(0.0, min(100.0, round(raw_score, 2)))

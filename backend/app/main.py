@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import __version__
 from app.config import settings
 
+
 logger = structlog.get_logger(__name__)
 
 

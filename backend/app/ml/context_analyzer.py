@@ -486,6 +486,9 @@ class ContextAnalyzer:
 
         # Base score from total weight (normalize: weight sum of 2.0 → score ~70)
         base_score = min(total_weight / 2.0, 1.0) * 70.0
+        
+        # Apply slight adjustment for multiple phrase detection
+        phrase_diversity_factor = min(len(detected_phrases) / 10.0, 0.1)
 
         # Critical phrase bonus: any critical phrase adds significant risk
         critical_bonus = min(critical_count * 20.0, 40.0)
@@ -493,8 +496,8 @@ class ContextAnalyzer:
         # Density bonus (capped)
         density_bonus = min(density * 5.0, 15.0)
 
-        # Combine
-        raw_score = base_score + critical_bonus + density_bonus
+        # Combine with diversity factor
+        raw_score = base_score + critical_bonus + density_bonus + (phrase_diversity_factor * 5.0)
 
         # Semantic Category Floor Checks (Fraud & Extortion safeguards):
         has_credential = any(p.category == "credential" for p in detected_phrases)

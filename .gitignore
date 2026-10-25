@@ -96,9 +96,10 @@ datasets/
 # ---- Docker ----
 docker-compose.override.yml
 
-# ---- IDE ----
+# ---- IDE & Dev Tools ----
 .vscode/
 .idea/
+.freebuff/
 *.swp
 *.swo
 *~
